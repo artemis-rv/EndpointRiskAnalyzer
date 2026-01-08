@@ -1,9 +1,7 @@
 import subprocess
-import json
+# import json
 from day1 import run_day1_scan, evaluate_basic_risk_flags
 from day3 import extract_features
-
-# from llm_explainer import explain_with_llm
 
 
 def detect_java_runtime():
@@ -83,8 +81,8 @@ def run_day2_scan():
 
 
 
-if __name__ == "__main__":
-    scan_result = run_day2_scan()
-    print(json.dumps(scan_result, indent=2))
-    # print("\n\n\n", json.dumps(extract_features(scan_result), indent=2))    #ML values
-    print("\n\n\n", json.dumps(scan_result, indent=2))    #ML values
+# if __name__ == "__main__":
+#     scan_result = run_day2_scan()
+#     print(json.dumps(scan_result, indent=2))
+#     # print("\n\n\n", json.dumps(extract_features(scan_result), indent=2))    #ML values
+#     print("\n\n\n", json.dumps(scan_result, indent=2))    #ML values
