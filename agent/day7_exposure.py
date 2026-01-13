@@ -41,14 +41,16 @@ def is_remote_registry_enabled():
 # remote management
 def is_winrm_enabled():
     try:
-        output = subprocess.check_output(
-            'winrm get winrm/config',
+        subprocess.check_output(
+            "winrm get winrm/config",
             shell=True,
+            stderr=subprocess.DEVNULL,
             text=True
         )
         return True
-    except:
+    except subprocess.CalledProcessError:
         return False
+
 
 def collect_exposure_posture():
     data = {
@@ -86,8 +88,17 @@ def collect_exposure_posture():
         data["errors"].append("Unable to determine Remote Registry status")
 
     winrm = is_winrm_enabled()
-    data["winrm_enabled"] = winrm
-    data["evidence"].append("WinRM configuration checked")
+    if winrm is not None:
+        data["winrm_enabled"] = winrm
+        if winrm:
+            data["evidence"].append("WinRM configuration checked")
+        else:
+            data["evidence"].append("WinRM query failed; service not reachable")
+
+    else:
+        data["confidence"] = "medium"
+        data["errors"].append("Unable to determine WinRM status")
+
 
     listening_ports = get_listening_ports()
     if listening_ports is not None:

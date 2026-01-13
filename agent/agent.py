@@ -44,7 +44,7 @@ def run_agent():
     #Day 7: exposure check
     scan["exposure_posture"]=d7.collect_exposure_posture()
     # Output
-    print(json.dumps(scan, indent=2))
+    # print(json.dumps(scan, indent=2))
 
 
     return scan
@@ -59,16 +59,16 @@ if __name__ == "__main__":
     result = run_agent()
 
     # Ensure scans directory exists
-    # os.makedirs("scans", exist_ok=True)
+    os.makedirs("scans/ScanV2", exist_ok=True)
 
-    # hostname = socket.gethostname()
-    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    hostname = socket.gethostname()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # # filename = f"../scans/scan_{hostname}_{timestamp}.json"
-    # filename = f"scans/ScanV2/scan_{hostname}_{timestamp}.json"
+    # filename = f"../scans/scan_{hostname}_{timestamp}.json"
+    filename = f"scans/ScanV2/scan_{hostname}_{timestamp}.json"
 
-    # with open(filename, "w") as f:
-    #     json.dump(result, f, indent=2)
+    with open(filename, "w") as f:
+        json.dump(result, f, indent=2)
 
-    # print(f"[+] Scan completed successfully")
-    # print(f"[+] Output saved to: {filename}")
+    print(f"[+] Scan completed successfully")
+    print(f"[+] Output saved to: {filename}")

@@ -10,7 +10,7 @@ def is_user_admin():
     except:
         return None
     
-print(is_user_admin())
+# print(is_user_admin())
 
 
 # Controls whether User Account Control is enforced.
