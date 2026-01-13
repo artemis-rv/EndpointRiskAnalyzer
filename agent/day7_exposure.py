@@ -138,13 +138,21 @@ COMMON_RISKY_PORTS = {
 }
 
 def flag_risky_ports(port_list):
+    seen=set()
     risky = []
     for entry in port_list:
         port = entry["port"]
+        protocol=entry["protocol"]
+
+        key=(port,protocol)
+
+        if key in seen:
+            continue
         if port in COMMON_RISKY_PORTS:
             risky.append({
                 "port": port,
                 "service": COMMON_RISKY_PORTS[port],
                 "protocol": entry["protocol"]
             })
+            seen.add(key)
     return risky
