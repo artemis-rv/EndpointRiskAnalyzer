@@ -12,7 +12,6 @@ Endpoint agent responsible for:
 This file is the ONLY executable on endpoints.
 """
 
-import day1         #remove this (in github)
 import day2
 import day3
 import day4

@@ -151,8 +151,8 @@ def evaluate_basic_risk_flags(scan):
 
     defender=scan["security"]["defender"].get("realtime_protection")
     firewall=scan["security"]["firewall"]
-    # software=len(scan["installed_softwares"])
-    software=scan["installed_softwares"]
+    software=len(scan["installed_softwares"])
+    # software=scan["installed_softwares"]
 
     if defender == "False":
         flags.append({
@@ -216,7 +216,8 @@ def run_day1_scan():
             "defender": get_defender_status(),
             "firewall": get_firewall_status()
         },
-        "installed_softwares": len(get_installed_software())
+        # "installed_softwares": len(get_installed_software())
+        "installed_softwares": get_installed_software()
     }
 
     # scan["risk_flags"] = evaluate_basic_risk_flags(scan)
