@@ -89,5 +89,62 @@ def collect_exposure_posture():
     data["winrm_enabled"] = winrm
     data["evidence"].append("WinRM configuration checked")
 
+    listening_ports = get_listening_ports()
+    if listening_ports is not None:
+        data["listening_ports_count"] = len(listening_ports)
+        data["risky_listening_ports"] = flag_risky_ports(listening_ports)
+        data["evidence"].append("Listening ports retrieved via netstat")
+    else:
+        data["confidence"] = "medium"
+        data["errors"].append("Unable to retrieve listening ports")
+
+
     return data
 
+def get_listening_ports():
+    ports = []
+    try:
+        output = subprocess.check_output(
+            "netstat -ano",
+            shell=True,
+            text=True
+        )
+        for line in output.splitlines():
+            if "LISTENING" in line:
+                parts = line.split()
+                protocol = parts[0]
+                local_address = parts[1]
+                pid = parts[-1]
+
+                if ":" in local_address:
+                    port = local_address.split(":")[-1]
+                    ports.append({
+                        "protocol": protocol,
+                        "port": port,
+                        "pid": pid
+                    })
+    except Exception:
+        return None
+
+    return ports
+
+COMMON_RISKY_PORTS = {
+    "21": "FTP",
+    "23": "Telnet",
+    "3389": "RDP",
+    "445": "SMB",
+    "5985": "WinRM HTTP",
+    "5986": "WinRM HTTPS"
+}
+
+def flag_risky_ports(port_list):
+    risky = []
+    for entry in port_list:
+        port = entry["port"]
+        if port in COMMON_RISKY_PORTS:
+            risky.append({
+                "port": port,
+                "service": COMMON_RISKY_PORTS[port],
+                "protocol": entry["protocol"]
+            })
+    return risky
