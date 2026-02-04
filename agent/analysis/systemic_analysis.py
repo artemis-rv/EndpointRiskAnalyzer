@@ -1,3 +1,5 @@
+# to be run on main PC
+
 import json
 import os
 from collections import defaultdict
@@ -88,7 +90,7 @@ def analyze_systemic_risk(
             issue_counter["risky_ports_exposed"] += 1
 
     # -------------------------------
-    # Normalization
+    # Normalization: Deciding whether something is an exception or the norm.
     # -------------------------------
 
     systemic_issues = []
@@ -136,7 +138,7 @@ def analyze_systemic_risk(
 def main():
     # Path resolution relative to analysis/ folder
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    scans_folder = os.path.join(project_root, "scans")
+    scans_folder = os.path.join(project_root, "scans\ScanV2")
     output_file = os.path.join(project_root, "org_posture.json")
 
     print("[INFO] Loading endpoint scan files...")
