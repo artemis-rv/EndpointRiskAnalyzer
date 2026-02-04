@@ -138,7 +138,7 @@ def analyze_systemic_risk(
 def main():
     # Path resolution relative to analysis/ folder
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    scans_folder = os.path.join(project_root, "scans\ScanV2")
+    scans_folder = os.path.join(project_root, "scans\\ScanV2")       #relative path(to change)
     output_file = os.path.join(project_root, "org_posture.json")
 
     print("[INFO] Loading endpoint scan files...")
