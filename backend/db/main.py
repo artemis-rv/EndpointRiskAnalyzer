@@ -20,6 +20,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.db.mongo import db
 
+from backend.routes.scans import router as scans_router
+
 
 # -------------------------------
 # FastAPI App Initialization
@@ -89,3 +91,5 @@ def root():
     return {
         "message": "Organizational Security Posture Backend is running"
     }
+
+app.include_router(scans_router)
