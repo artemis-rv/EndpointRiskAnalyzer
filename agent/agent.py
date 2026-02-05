@@ -54,21 +54,49 @@ def run_agent():
     
 
 
+import requests
+
+BACKEND_URL = "http://127.0.0.1:8000/api/scans/"
+def send_scan_to_backend(scan_data: dict):
+    """
+    Sends collected scan data to backend API.
+    """
+    try:
+        response = requests.post(
+            BACKEND_URL,
+            json=scan_data,
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            print("[+] Scan successfully sent to backend")
+            print(response.json())
+        else:
+            print("[-] Backend rejected scan")
+            print(response.status_code, response.text)
+
+    except requests.exceptions.RequestException as e:
+        print("[-] Failed to connect to backend")
+        print(str(e))
+
+
 if __name__ == "__main__":
 
     result = run_agent()
+    send_scan_to_backend(result)
+
 
     # Ensure scans directory exists
-    os.makedirs("scans/ScanV2", exist_ok=True)
+    # os.makedirs("scans/ScanV2", exist_ok=True)
 
-    hostname = socket.gethostname()
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # hostname = socket.gethostname()
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # filename = f"../scans/scan_{hostname}_{timestamp}.json"
-    filename = f"scans/ScanV2/scan_{hostname}_{timestamp}.json"
+    # # filename = f"../scans/scan_{hostname}_{timestamp}.json"
+    # filename = f"scans/ScanV2/scan_{hostname}_{timestamp}.json"
 
-    with open(filename, "w") as f:
-        json.dump(result, f, indent=2)
+    # with open(filename, "w") as f:
+    #     json.dump(result, f, indent=2)
 
-    print(f"[+] Scan completed successfully")
-    print(f"[+] Output saved to: {filename}")
+    # print(f"[+] Scan completed successfully")
+    # print(f"[+] Output saved to: {filename}")
