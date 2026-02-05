@@ -25,6 +25,8 @@ from backend.routes.endpoints import router as endpoints_router
 from backend.routes.scans_read import router as scans_read_router
 from backend.routes.analysis import router as analysis_router
 from backend.services.interpretation import router as interpretation_router
+from backend.routes.posture import router as posture_router
+
 
 
 
@@ -103,4 +105,5 @@ app.include_router(endpoints_router)
 app.include_router(scans_read_router)
 app.include_router(analysis_router)
 app.include_router(interpretation_router)
+app.include_router(posture_router)
 
