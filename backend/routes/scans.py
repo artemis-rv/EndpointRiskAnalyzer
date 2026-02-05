@@ -40,8 +40,11 @@ def upload_scan(scan: dict):
 
     try:
         # Basic identity extraction
-        hostname = scan.get("hostname")
-        os_name = scan.get("os")
+        system_info = scan.get("system", {})
+
+        hostname = scan.get("hostname") or system_info.get("hostname")
+        os_name = scan.get("os") or system_info.get("os")
+
 
         if not hostname or not os_name:
             raise HTTPException(

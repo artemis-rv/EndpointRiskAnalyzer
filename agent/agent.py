@@ -19,7 +19,7 @@ import json
 import day6_priv_posture as d6
 import day7_exposure as d7
 
-import day5_anomaly_detect
+# import day5_anomaly_detect
 
 import os
 import socket
@@ -57,6 +57,7 @@ def run_agent():
 import requests
 
 BACKEND_URL = "http://127.0.0.1:8000/api/scans/"
+
 def send_scan_to_backend(scan_data: dict):
     """
     Sends collected scan data to backend API.

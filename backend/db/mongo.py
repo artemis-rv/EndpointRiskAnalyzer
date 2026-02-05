@@ -30,7 +30,8 @@ from pymongo.errors import ConnectionFailure
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
 # Database name for this project
-DB_NAME = os.getenv("DB_NAME", "org_security_posture")
+DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev")  #dev is only for testing
+#change when deploying
 
 
 # -------------------------------
