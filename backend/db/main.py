@@ -21,6 +21,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.db.mongo import db
 
 from backend.routes.scans import router as scans_router
+from backend.routes.endpoints import router as endpoints_router
+from backend.routes.scans_read import router as scans_read_router
+
 
 
 # -------------------------------
@@ -93,3 +96,5 @@ def root():
     }
 
 app.include_router(scans_router)
+app.include_router(endpoints_router)
+app.include_router(scans_read_router)
