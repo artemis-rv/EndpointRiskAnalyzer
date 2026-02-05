@@ -19,7 +19,7 @@ IMPORTANT:
 import json
 import os
 
-from interpretation_rules import ISSUE_INTERPRETATIONS
+from analysis.interpretation_rules import ISSUE_INTERPRETATIONS
 
 
 # -------------------------------

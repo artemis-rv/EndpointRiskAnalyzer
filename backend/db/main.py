@@ -23,6 +23,9 @@ from backend.db.mongo import db
 from backend.routes.scans import router as scans_router
 from backend.routes.endpoints import router as endpoints_router
 from backend.routes.scans_read import router as scans_read_router
+from backend.routes.analysis import router as analysis_router
+from backend.services.interpretation import router as interpretation_router
+
 
 
 
@@ -98,3 +101,6 @@ def root():
 app.include_router(scans_router)
 app.include_router(endpoints_router)
 app.include_router(scans_read_router)
+app.include_router(analysis_router)
+app.include_router(interpretation_router)
+

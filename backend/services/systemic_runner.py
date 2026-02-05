@@ -11,7 +11,7 @@ from backend.db.mongo import (
     org_posture_snapshots_collection
 )
 
-from analysis.systemic_analysis import run_systemic_analysis
+from analysis.systemic_analysis import analyze_systemic_risk
 
 
 def run_and_store_systemic_analysis():
@@ -31,7 +31,7 @@ def run_and_store_systemic_analysis():
         raise ValueError("No scans available for analysis")
 
     # Run existing analysis logic
-    posture_result = run_systemic_analysis(scans)
+    posture_result = analyze_systemic_risk(scans)
 
     # Store snapshot
     snapshot = {
