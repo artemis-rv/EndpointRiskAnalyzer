@@ -28,3 +28,8 @@ export async function triggerInterpretation(snapshotId) {
   });
   return res.json();
 }
+
+export async function getLatestInterpretation() {
+  const res = await fetch("http://127.0.0.1:8000/api/interpret/latest");
+  return res.json();
+}
