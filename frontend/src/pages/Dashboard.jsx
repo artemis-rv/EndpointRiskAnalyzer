@@ -6,11 +6,14 @@ import {
 } from "../api/api";
 
 import Interpretation from "../components/Interpretation";
+import EndpointScans from "../components/EndpointScans";
 
 
 export default function Dashboard() {
   const [endpoints, setEndpoints] = useState([]);
   const [posture, setPosture] = useState(null);
+  const [selectedEndpoint, setSelectedEndpoint] = useState(null);
+
 
   useEffect(() => {
     getEndpoints().then((data) => setEndpoints(data.endpoints || []));
@@ -24,15 +27,31 @@ export default function Dashboard() {
       <button onClick={triggerAnalysis}>
         Run Systemic Analysis
       </button>
+      
+
 
       <h2>Endpoints</h2>
       <ul>
         {endpoints.map((ep) => (
           <li key={ep.endpoint_id}>
+            <button
+              onClick={() => setSelectedEndpoint(ep.endpoint_id)}
+              style={{ marginRight: "10px" }}
+            >
+              View Scans
+            </button>
             {ep.hostname} ({ep.os}) – Scans: {ep.scan_count}
           </li>
         ))}
       </ul>
+            {selectedEndpoint && (
+        <EndpointScans
+          endpointId={selectedEndpoint}
+          onClose={() => setSelectedEndpoint(null)}
+        />
+      )}
+
+
 
       <h2>Latest Posture</h2>
       <pre>

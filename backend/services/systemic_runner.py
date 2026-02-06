@@ -22,6 +22,8 @@ def run_and_store_systemic_analysis():
 
     # Fetch all scans
     scans_cursor = endpoint_scans_collection().find()
+    # print("SCAN COUNT:", endpoint_scans_collection().count_documents({}))
+
 
     scans = []
     for scan in scans_cursor:

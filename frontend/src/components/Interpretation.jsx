@@ -9,31 +9,40 @@ export default function Interpretation() {
   }, []);
 
   if (!data || data.status === "empty") {
-    return <p>No interpretation available.</p>;
+    return <p>No interpretation available yet.</p>;
+  }
+
+  const interp = data.interpretation;
+
+  if (!interp) {
+    return <p>Interpretation data malformed.</p>;
   }
 
   return (
     <div>
-      <h2>Interpretation Summary</h2>
+      <h2>Organizational Interpretation</h2>
 
+      <h3>Overview</h3>
       <p>
-        <strong>Overall Risk:</strong>{" "}
-        <span style={{ color: data.risk_level === "HIGH" ? "red" : "green" }}>
-          {data.risk_level}
-        </span>
+        <strong>Total Hosts Analyzed:</strong>{" "}
+        {interp.organization_overview?.total_hosts_analyzed}
+      </p>
+      <p>
+        <strong>Analysis Scope:</strong>{" "}
+        {interp.organization_overview?.analysis_scope}
       </p>
 
-      <h3>Key Findings</h3>
+      <h3>Key Observations</h3>
       <ul>
-        {data.findings.map((item, idx) => (
-          <li key={idx}>{item}</li>
+        {interp.key_observations?.map((obs, idx) => (
+          <li key={idx}>{obs}</li>
         ))}
       </ul>
 
-      <h3>Recommended Actions</h3>
+      <h3>Context & Limitations</h3>
       <ul>
-        {data.recommendations.map((item, idx) => (
-          <li key={idx}>{item}</li>
+        {interp.context_notes?.map((note, idx) => (
+          <li key={idx}>{note}</li>
         ))}
       </ul>
     </div>
