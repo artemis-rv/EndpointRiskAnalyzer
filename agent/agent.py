@@ -81,6 +81,34 @@ def send_scan_to_backend(scan_data: dict):
         print(str(e))
 
 
+# import time
+import requests
+
+BACKEND_URL = "http://127.0.0.1:8000"
+POLL_INTERVAL = 60  # seconds
+
+
+def poll_for_jobs(endpoint_id):
+    try:
+        response = requests.get(
+            f"{BACKEND_URL}/api/agent/jobs/{endpoint_id}",
+            timeout=5
+        )
+        return response.json()
+    except Exception:
+        return None
+
+
+def mark_job_complete(job_id):
+    try:
+        requests.post(
+            f"{BACKEND_URL}/api/agent/jobs/{job_id}/complete",
+            timeout=5
+        )
+    except Exception:
+        pass
+
+
 if __name__ == "__main__":
 
     result = run_agent()

@@ -83,3 +83,7 @@ def org_posture_snapshots_collection():
 
 def org_interpretations_collection():
     return db["org_interpretations"]
+
+def agent_jobs_collection():
+    return db["agent_jobs"]
+
