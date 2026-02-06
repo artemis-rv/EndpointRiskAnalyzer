@@ -27,6 +27,8 @@ from backend.routes.analysis import router as analysis_router
 from backend.services.interpretation import router as interpretation_router
 from backend.routes.posture import router as posture_router
 from fastapi.middleware.cors import CORSMiddleware
+from backend.routes.interpretation_read import router as interpretation_read_router
+
 
 
 
@@ -105,6 +107,7 @@ app.include_router(scans_read_router)
 app.include_router(analysis_router)
 app.include_router(interpretation_router)
 app.include_router(posture_router)
+app.include_router(interpretation_read_router)
 
 app.add_middleware(
     CORSMiddleware,

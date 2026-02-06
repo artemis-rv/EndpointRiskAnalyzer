@@ -5,6 +5,9 @@ import {
   getLatestPosture,
 } from "../api/api";
 
+import Interpretation from "../components/Interpretation";
+
+
 export default function Dashboard() {
   const [endpoints, setEndpoints] = useState([]);
   const [posture, setPosture] = useState(null);
@@ -35,6 +38,10 @@ export default function Dashboard() {
       <pre>
         {posture ? JSON.stringify(posture, null, 2) : "No posture yet"}
       </pre>
+
+      <h2>Interpretation</h2>
+      <Interpretation />
+
     </div>
   );
 }
