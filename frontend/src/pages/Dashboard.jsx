@@ -9,6 +9,19 @@ import Interpretation from "../components/Interpretation";
 import EndpointScans from "../components/EndpointScans";
 
 
+async function scheduleScanAll() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/jobs/scan/all", {
+      method: "POST",
+    });
+    const data = await res.json();
+    alert(`Scheduled scans for ${data.jobs_created} endpoints`);
+  } catch (err) {
+    alert("Failed to schedule scan jobs");
+  }
+}
+
+
 export default function Dashboard() {
   const [endpoints, setEndpoints] = useState([]);
   const [posture, setPosture] = useState(null);
@@ -28,6 +41,10 @@ export default function Dashboard() {
         Run Systemic Analysis
       </button>
       
+
+      <button onClick={scheduleScanAll}>
+      Schedule Scan (All Endpoints)
+      </button>
 
 
       <h2>Endpoints</h2>

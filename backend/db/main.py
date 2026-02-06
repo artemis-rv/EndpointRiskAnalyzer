@@ -29,6 +29,10 @@ from backend.routes.posture import router as posture_router
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.interpretation_read import router as interpretation_read_router
 from backend.routes.agent_jobs import router as agent_jobs_router
+from backend.routes.job_scheduler import router as job_scheduler_router
+from backend.routes.agent_register import router as agent_register_router
+
+
 
 
 
@@ -111,6 +115,8 @@ app.include_router(interpretation_router)
 app.include_router(posture_router)
 app.include_router(interpretation_read_router)
 app.include_router(agent_jobs_router)
+app.include_router(job_scheduler_router)
+app.include_router(agent_register_router)
 
 app.add_middleware(
     CORSMiddleware,

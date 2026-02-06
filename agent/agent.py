@@ -56,7 +56,7 @@ def run_agent():
 
 import requests
 
-BACKEND_URL = "http://127.0.0.1:8000/api/scans/"
+SCANS_URL = "http://127.0.0.1:8000/api/scans/"
 
 def send_scan_to_backend(scan_data: dict):
     """
@@ -64,7 +64,7 @@ def send_scan_to_backend(scan_data: dict):
     """
     try:
         response = requests.post(
-            BACKEND_URL,
+            SCANS_URL,
             json=scan_data,
             timeout=10
         )
@@ -81,11 +81,11 @@ def send_scan_to_backend(scan_data: dict):
         print(str(e))
 
 
-# import time
+import time
 import requests
 
 BACKEND_URL = "http://127.0.0.1:8000"
-POLL_INTERVAL = 60  # seconds
+POLL_INTERVAL = 30  # seconds
 
 
 def poll_for_jobs(endpoint_id):
@@ -109,10 +109,47 @@ def mark_job_complete(job_id):
         pass
 
 
+def agent_main_loop(endpoint_id):
+    print(f"[+] Agent started for endpoint: {endpoint_id}")
+
+    while True:
+        job = poll_for_jobs(endpoint_id)
+
+        if job and job.get("job_type") == "RUN_SCAN":
+            print("[+] Received RUN_SCAN job")
+
+            scan_result = run_agent()
+            send_scan_to_backend(scan_result)
+            mark_job_complete(job["job_id"])
+
+        time.sleep(POLL_INTERVAL)
+
+
+def register_agent(endpoint_id):
+    payload = {
+        "endpoint_id": endpoint_id,
+        "hostname": socket.gethostname(),
+        "os": os.name
+    }
+
+    try:
+        requests.post(
+            f"{BACKEND_URL}/api/agent/register",
+            json=payload,
+            timeout=5
+        )
+        print("[+] Agent registered with backend")
+    except Exception as e:
+        print("[-] Agent registration failed", e)
+
+
 if __name__ == "__main__":
 
-    result = run_agent()
-    send_scan_to_backend(result)
+    # Stable endpoint identity
+    endpoint_id = socket.gethostname()
+    register_agent(endpoint_id)
+    agent_main_loop(endpoint_id)
+
 
 
     # Ensure scans directory exists

@@ -209,7 +209,7 @@ def run_day1_scan():
     scan = {
         "metadata": {
             "scan_time_utc": datetime.now().isoformat() + "Z",
-            "agent_version": "0.1-day1"
+            "agent_version": "1.0"
         },
         "system": get_system_info(),
         "security": {
