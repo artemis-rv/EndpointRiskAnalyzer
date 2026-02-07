@@ -11,20 +11,30 @@ router = APIRouter(prefix="/api/agent", tags=["Agent Jobs"])
 def get_pending_job(endpoint_id: str):
     """
     Agent polls for pending jobs assigned to it.
-    Returns ONE job at a time.
+    Returns ONE job at a time. endpoint_id must match what was stored (UUID or legacy id).
     """
+    endpoint_id = (endpoint_id or "").strip()
+    if not endpoint_id:
+        return {"status": "no_job"}
 
     job = agent_jobs_collection().find_one({
         "endpoint_id": endpoint_id,
         "status": "pending"
     })
-
+    if not job:
+        # Also try matching as ObjectId for legacy endpoints
+        from bson import ObjectId
+        if ObjectId.is_valid(endpoint_id):
+            job = agent_jobs_collection().find_one({
+                "endpoint_id": ObjectId(endpoint_id),
+                "status": "pending"
+            })
     if not job:
         return {"status": "no_job"}
 
     return {
-        "job_id": job["job_id"],
-        "job_type": job["job_type"]
+        "job_id": job.get("job_id"),
+        "job_type": job.get("job_type", "RUN_SCAN")
     }
 
 

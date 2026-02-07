@@ -61,6 +61,29 @@ mongo_client = get_mongo_client()
 # Database handle
 db = mongo_client[DB_NAME]
 
+# Collections used by the app (MongoDB creates DB and collection on first write)
+REQUIRED_COLLECTIONS = [
+    "endpoints",
+    "endpoint_scans",
+    "org_posture_snapshots",
+    "org_interpretations",
+    "agent_jobs",
+]
+
+
+def ensure_database_exists():
+    """
+    Ensure the database and required collections exist.
+    MongoDB creates the database and a collection on first write; we do one insert+delete per collection.
+    """
+    for name in REQUIRED_COLLECTIONS:
+        try:
+            coll = db[name]
+            coll.insert_one({"_init": 1})
+            coll.delete_one({"_init": 1})
+        except Exception:
+            pass
+
 
 # -------------------------------
 # Collection Access Helpers

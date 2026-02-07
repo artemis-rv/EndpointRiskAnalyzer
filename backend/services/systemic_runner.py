@@ -17,14 +17,11 @@ from analysis.systemic_analysis import analyze_systemic_risk
 def run_and_store_systemic_analysis():
     """
     Fetches all endpoint scans, runs systemic analysis,
-    and stores the resulting posture snapshot.
+    stores the resulting posture snapshot, and runs interpretation on it.
     """
 
     # Fetch all scans
     scans_cursor = endpoint_scans_collection().find()
-    # print("SCAN COUNT:", endpoint_scans_collection().count_documents({}))
-
-
     scans = []
     for scan in scans_cursor:
         scans.append(scan["scan_data"])
@@ -40,7 +37,14 @@ def run_and_store_systemic_analysis():
         "generated_at": datetime.now(timezone.utc),
         "posture_data": posture_result
     }
-
     result = org_posture_snapshots_collection().insert_one(snapshot)
+    snapshot_id = str(result.inserted_id)
 
-    return str(result.inserted_id)
+    # Run interpretation on the new snapshot so Dashboard shows it
+    try:
+        from backend.services.interpretation_runner import run_and_store_interpretation
+        run_and_store_interpretation(snapshot_id)
+    except Exception:
+        pass  # Don't fail systemic analysis if interpretation fails
+
+    return snapshot_id

@@ -1,23 +1,23 @@
-﻿import { useEffect, useState } from "react";
-import { getLatestPostureInterpretation } from "../api/api";
+import { useEffect, useState } from "react";
+import { getLatestInterpretation } from "../api/api";
+import { formatDateTimeIST } from "../utils/dateUtils";
 
 export default function Posture() {
-  const [posture, setPosture] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getLatestPostureInterpretation()
-      .then((data) => {
-        setPosture(data);
+    getLatestInterpretation()
+      .then((res) => {
+        setData(res.status === "empty" ? null : res);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   }, []);
 
-  const overview = posture?.interpretation?.organization_overview;
-  const keyObservations = posture?.interpretation?.key_observations || [];
-  const contextNotes = posture?.interpretation?.context_notes || [];
+  const interp = data?.interpretation;
+  const overview = interp?.organization_overview ?? interp;
+  const keyObservations = interp?.key_observations || [];
+  const contextNotes = interp?.context_notes || [];
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen">
@@ -27,25 +27,23 @@ export default function Posture() {
 
       {loading && (
         <p className="text-gray-500 animate-pulse">
-          Generating posture interpretation...
+          Loading posture interpretation...
         </p>
       )}
 
-      {!loading && !posture && (
+      {!loading && !data && (
         <p className="text-gray-500">
-          No posture data available yet.
+          No posture data available yet. Run Systemic Analysis from the Dashboard to generate.
         </p>
       )}
 
-      {!loading && posture && (
+      {!loading && data && (
         <div className="space-y-6 max-w-4xl">
           <div className="bg-white rounded-xl shadow p-5">
             <div className="flex flex-wrap justify-between items-center gap-2 mb-2">
               <h2 className="text-lg font-semibold">Overview</h2>
               <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-800">
-                {posture?.generated_at
-                  ? new Date(posture.generated_at).toLocaleString()
-                  : "N/A"}
+                {formatDateTimeIST(data.generated_at)}
               </span>
             </div>
 
@@ -74,7 +72,7 @@ export default function Posture() {
             {keyObservations.length > 0 && (
               <ul className="list-disc list-inside space-y-2 text-gray-700">
                 {keyObservations.map((obs, idx) => (
-                  <li key={idx}>{obs}</li>
+                  <li key={idx}>{typeof obs === "string" ? obs : JSON.stringify(obs)}</li>
                 ))}
               </ul>
             )}
@@ -94,7 +92,7 @@ export default function Posture() {
             {contextNotes.length > 0 && (
               <ul className="list-disc list-inside space-y-2 text-gray-600 text-sm">
                 {contextNotes.map((note, idx) => (
-                  <li key={idx}>{note}</li>
+                  <li key={idx}>{typeof note === "string" ? note : JSON.stringify(note)}</li>
                 ))}
               </ul>
             )}

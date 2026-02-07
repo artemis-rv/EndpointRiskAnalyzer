@@ -43,22 +43,39 @@ def load_scan_files(scan_folder: str) -> List[Dict]:
 # Core Aggregation Logic
 # -------------------------------
 
+def _host_id(scan: Dict) -> str:
+    """Return a stable identifier for the host that produced this scan."""
+    hostname = scan.get("hostname") or (scan.get("system") or {}).get("hostname")
+    if hostname:
+        return str(hostname).strip().lower()
+    return str(id(scan))
+
+
 def analyze_systemic_risk(
     scan_results: List[Dict],
     threshold: float = DEFAULT_THRESHOLD
 ) -> Dict:
     """
     Perform organization-level normalization of endpoint posture signals.
+    Counts unique hosts only (same host with multiple scans is counted once).
     """
 
-    total_hosts = len(scan_results)
-    if total_hosts == 0:
+    if not scan_results:
         raise ValueError("No scan results provided")
+
+    # Group scans by host so we count each host at most once
+    host_to_scan: Dict[str, Dict] = {}
+    for scan in scan_results:
+        hid = _host_id(scan)
+        if hid not in host_to_scan:
+            host_to_scan[hid] = scan
+
+    unique_scans = list(host_to_scan.values())
+    total_hosts = len(unique_scans)
 
     issue_counter = defaultdict(int)
 
-    for scan in scan_results:
-
+    for scan in unique_scans:
         # --- Security Controls ---
         security_controls = scan.get("security_controls", {})
         if security_controls.get("firewall_status") is False:

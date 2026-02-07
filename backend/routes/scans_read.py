@@ -24,18 +24,14 @@ router = APIRouter(prefix="/api/scans", tags=["Scans (Read)"])
 @router.get("/{endpoint_id}")
 def get_scans_for_endpoint(endpoint_id: str):
     """
-    Returns all scans for a given endpoint ID.
+    Returns all scans for a given endpoint ID (UUID string or legacy ObjectId string).
     """
+    if ObjectId.is_valid(endpoint_id):
+        query = {"endpoint_id": ObjectId(endpoint_id)}
+    else:
+        query = {"endpoint_id": endpoint_id}
 
-    # Validate ObjectId
-    if not ObjectId.is_valid(endpoint_id):
-        raise HTTPException(status_code=400, detail="Invalid endpoint_id")
-
-    oid = ObjectId(endpoint_id)
-
-    scans_cursor = endpoint_scans_collection().find(
-        {"endpoint_id": oid}
-    ).sort("scan_time", -1)
+    scans_cursor = endpoint_scans_collection().find(query).sort("scan_time", -1)
 
     scans = []
 

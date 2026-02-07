@@ -49,7 +49,8 @@ export async function scheduleScanEndpoint(endpointId) {
 }
 
 export async function getJobs() {
-  const res = await fetch("http://127.0.0.1:8000/api/jobs");
+  const res = await fetch(`${BASE_URL}/api/jobs`);
+  if (!res.ok) return { jobs: [] };
   return res.json();
 }
 

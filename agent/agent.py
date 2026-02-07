@@ -23,7 +23,29 @@ import day7_exposure as d7
 
 import os
 import socket
+import uuid
 from datetime import datetime
+
+# Persist endpoint ID so it stays the same across restarts (avoids hostname collisions)
+ENDPOINT_ID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".endpoint_id")
+
+
+def get_or_create_endpoint_id():
+    """Generate endpoint ID once and persist it; return same ID on subsequent runs."""
+    if os.path.isfile(ENDPOINT_ID_FILE):
+        try:
+            with open(ENDPOINT_ID_FILE, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except Exception:
+            pass
+    eid = str(uuid.uuid4())
+    try:
+        with open(ENDPOINT_ID_FILE, "w", encoding="utf-8") as f:
+            f.write(eid)
+    except Exception:
+        pass
+    return eid
+
 
 def run_agent():
     # Day 1 + Day 2: data collection
@@ -57,15 +79,20 @@ def run_agent():
 import requests
 
 SCANS_URL = "http://127.0.0.1:8000/api/scans/"
+# SCANS_URL = "http://192.168.56.1:8000/api/scans/"
 
-def send_scan_to_backend(scan_data: dict):
+def send_scan_to_backend(scan_data: dict, endpoint_id: str):
     """
     Sends collected scan data to backend API.
+    Includes endpoint_id for association and hostname for display.
     """
+    payload = dict(scan_data)
+    payload["endpoint_id"] = endpoint_id
+    payload["hostname"] = payload.get("hostname") or socket.gethostname()
     try:
         response = requests.post(
             SCANS_URL,
-            json=scan_data,
+            json=payload,
             timeout=10
         )
 
@@ -85,6 +112,7 @@ import time
 import requests
 
 BACKEND_URL = "http://127.0.0.1:8000"
+# BACKEND_URL = "http://192.168.56.1:8000"
 POLL_INTERVAL = 30  # seconds
 
 
@@ -109,46 +137,61 @@ def mark_job_complete(job_id):
         pass
 
 
-def agent_main_loop(endpoint_id):
-    print(f"[+] Agent started for endpoint: {endpoint_id}")
+def agent_main_loop(endpoint_id: str, hostname: str):
+    print(f"[+] Agent started for endpoint: {hostname}")
 
     while True:
+        send_heartbeat(endpoint_id)
         job = poll_for_jobs(endpoint_id)
 
         if job and job.get("job_type") == "RUN_SCAN":
             print("[+] Received RUN_SCAN job")
 
             scan_result = run_agent()
-            send_scan_to_backend(scan_result)
+            send_scan_to_backend(scan_result, endpoint_id)
             mark_job_complete(job["job_id"])
-
+            
         time.sleep(POLL_INTERVAL)
 
 
-def register_agent(endpoint_id):
+def register_agent(endpoint_id: str):
     payload = {
         "endpoint_id": endpoint_id,
         "hostname": socket.gethostname(),
-        "os": os.name
+        "os": os.name,
     }
 
     try:
-        requests.post(
+        r = requests.post(
             f"{BACKEND_URL}/api/agent/register",
             json=payload,
             timeout=5
         )
-        print("[+] Agent registered with backend")
+        data = r.json() if r.text else {}
+        if data.get("status") == "registered":
+            print("[+] Agent registered with backend")
+        else:
+            print("[-] Agent registration failed:", data.get("message", r.text or r.status_code))
     except Exception as e:
-        print("[-] Agent registration failed", e)
+        print("[-] Agent registration failed:", e)
+
+
+def send_heartbeat(endpoint_id):
+    try:
+        requests.post(
+            f"{BACKEND_URL}/api/agent/heartbeat/{endpoint_id}",
+            timeout=3
+        )
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
-
-    # Stable endpoint identity
-    endpoint_id = socket.gethostname()
+    # Persistent endpoint ID (generated once, avoids hostname collisions)
+    endpoint_id = get_or_create_endpoint_id()
+    hostname = socket.gethostname()
     register_agent(endpoint_id)
-    agent_main_loop(endpoint_id)
+    agent_main_loop(endpoint_id, hostname)
 
 
 

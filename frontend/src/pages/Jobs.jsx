@@ -1,15 +1,21 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getJobs } from "../api/api";
+import { formatDateTimeIST } from "../utils/dateUtils";
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const loadJobs = () =>
+    getJobs()
+      .then((data) => setJobs(Array.isArray(data.jobs) ? data.jobs : []))
+      .catch(() => setJobs([]))
+      .finally(() => setLoading(false));
+
   useEffect(() => {
-    getJobs().then((data) => {
-      setJobs(data.jobs || []);
-      setLoading(false);
-    });
+    loadJobs();
+    const interval = setInterval(loadJobs, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -43,12 +49,12 @@ export default function Jobs() {
               </thead>
               <tbody className="divide-y">
                 {jobs.map((job) => (
-                  <tr key={job.job_id} className="hover:bg-slate-100">
+                  <tr key={job.job_id || job._id} className="hover:bg-slate-100">
                     <td className="py-2 pr-4 font-mono text-xs">
-                      {job.job_id.slice(0, 8)}...
+                      {job.job_id ? `${String(job.job_id).slice(0, 8)}...` : "—"}
                     </td>
-                    <td className="py-2 pr-4">{job.endpoint_id}</td>
-                    <td className="py-2 pr-4">{job.job_type}</td>
+                    <td className="py-2 pr-4">{job.endpoint_id ?? "—"}</td>
+                    <td className="py-2 pr-4">{job.job_type ?? "—"}</td>
                     <td className="py-2 pr-4">
                       <span
                         className={
@@ -57,11 +63,11 @@ export default function Jobs() {
                             : "inline-flex items-center rounded-full border border-slate-300 px-2 py-0.5 text-xs text-slate-700"
                         }
                       >
-                        {job.status}
+                        {job.status ?? "pending"}
                       </span>
                     </td>
                     <td className="py-2 pr-4 text-sm text-gray-500">
-                      {new Date(job.created_at).toLocaleString()}
+                      {formatDateTimeIST(job.created_at)}
                     </td>
                   </tr>
                 ))}

@@ -18,7 +18,10 @@ This file intentionally avoids:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.db.mongo import db
+from backend.db.mongo import db, ensure_database_exists
+
+# Ensure database and collections exist (so Scan All and agent register work with empty DB)
+ensure_database_exists()
 
 from backend.routes.scans import router as scans_router
 from backend.routes.endpoints import router as endpoints_router
@@ -31,11 +34,6 @@ from backend.routes.interpretation_read import router as interpretation_read_rou
 from backend.routes.agent_jobs import router as agent_jobs_router
 from backend.routes.job_scheduler import router as job_scheduler_router
 from backend.routes.agent_register import router as agent_register_router
-
-
-
-
-
 
 
 # -------------------------------
@@ -92,6 +90,8 @@ def db_health_check():
             "database": "error",
             "error": str(e)
         }
+
+
 
 
 # -------------------------------

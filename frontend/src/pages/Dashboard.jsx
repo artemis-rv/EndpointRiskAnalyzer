@@ -3,49 +3,46 @@ import {
   getEndpoints,
   triggerAnalysis,
   getLatestPosture,
+  getLatestInterpretation,
 } from "../api/api";
-
 import Interpretation from "../components/Interpretation";
 import EndpointScans from "../components/EndpointScans";
-
-function formatDateTime(value) {
-  if (!value) return "N/A";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "N/A";
-  return date.toLocaleString();
-}
-
-async function scheduleScanAll() {
-  try {
-    const res = await fetch("http://127.0.0.1:8000/api/jobs/scan/all", {
-      method: "POST",
-    });
-    const data = await res.json();
-    alert(`Scheduled scans for ${data.jobs_created} endpoints`);
-  } catch (err) {
-    alert("Failed to schedule scan jobs");
-  }
-}
+import { formatDateTimeIST } from "../utils/dateUtils";
 
 export default function Dashboard() {
   const [endpoints, setEndpoints] = useState([]);
   const [posture, setPosture] = useState(null);
+  const [interpretation, setInterpretation] = useState(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
+  const [loadingInterpretation, setLoadingInterpretation] = useState(true);
 
   useEffect(() => {
-    getEndpoints().then((data) => setEndpoints(data.endpoints || []));
+    const loadEndpoints = () =>
+      getEndpoints().then((data) => setEndpoints(data.endpoints || []));
+    loadEndpoints();
+    const interval = setInterval(loadEndpoints, 15000); // poll every 15s so active agents count updates when agent starts/stops
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     getLatestPosture().then(setPosture);
+    getLatestInterpretation()
+      .then((data) => {
+        setInterpretation(data.status === "empty" ? null : data);
+      })
+      .finally(() => setLoadingInterpretation(false));
   }, []);
 
   const totalEndpoints = endpoints.length;
   const activeAgents = endpoints.filter(
-    (ep) => ep.agent_active || ep.agent_status === "active"
+    (ep) => ep.agent_active === true
   ).length;
   const lastScan =
+    posture?.generated_at ||
     posture?.latest_scan_at ||
     posture?.last_scan_at ||
-    posture?.generated_at ||
-    posture?.created_at;
+    posture?.created_at ||
+    interpretation?.generated_at;
 
   return (
     <div className="p-6 bg-slate-50 min-h-screen">
@@ -62,12 +59,6 @@ export default function Dashboard() {
             className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800"
           >
             Run Systemic Analysis
-          </button>
-          <button
-            onClick={scheduleScanAll}
-            className="px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium border border-slate-200 hover:border-slate-300"
-          >
-            Schedule Scan (All Endpoints)
           </button>
         </div>
       </div>
@@ -88,7 +79,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl shadow p-4">
           <p className="text-sm text-gray-500">Last Scan</p>
           <p className="text-lg font-semibold text-slate-900">
-            {formatDateTime(lastScan)}
+            {formatDateTimeIST(lastScan)}
           </p>
         </div>
       </div>
@@ -132,10 +123,45 @@ export default function Dashboard() {
         </div>
 
         <div className="bg-white rounded-xl shadow p-4">
-          <h2 className="text-lg font-semibold mb-2">Latest Posture</h2>
-          <pre className="text-xs bg-slate-50 rounded-lg p-3 overflow-auto max-h-96">
-            {posture ? JSON.stringify(posture, null, 2) : "No posture yet"}
-          </pre>
+          <h2 className="text-lg font-semibold mb-2">Latest Posture Summary</h2>
+          {loadingInterpretation && (
+            <p className="text-sm text-gray-500 animate-pulse">
+              Loading...
+            </p>
+          )}
+          {!loadingInterpretation && !interpretation && (
+            <p className="text-sm text-gray-500">
+              No posture interpretation available yet. Run Systemic Analysis to generate.
+            </p>
+          )}
+          {!loadingInterpretation && interpretation && (
+            <div className="space-y-2 text-sm text-gray-700">
+              <p>
+                <strong>Generated:</strong>{" "}
+                {formatDateTimeIST(interpretation.generated_at)}
+              </p>
+              <p>
+                <strong>Hosts analyzed:</strong>{" "}
+                {interpretation?.interpretation?.organization_overview
+                  ?.total_hosts_analyzed ?? "N/A"}
+              </p>
+              <ul className="list-disc list-inside mt-2">
+                {(interpretation?.interpretation?.key_observations || [])
+                  .slice(0, 3)
+                  .map((obs, idx) => (
+                    <li key={idx}>{obs}</li>
+                  ))}
+              </ul>
+              <button
+                className="mt-4 px-3 py-1.5 rounded-md border border-slate-200 text-sm hover:border-slate-300"
+                onClick={() => {
+                  window.location.href = "/posture";
+                }}
+              >
+                View Full Posture
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
