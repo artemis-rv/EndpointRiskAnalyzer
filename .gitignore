@@ -5,7 +5,7 @@ __pycache__/
 
 scans/
 
-*.json
+manifest.json
 *.spec
 *.exe
 build/
