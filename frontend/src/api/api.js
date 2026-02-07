@@ -53,3 +53,9 @@ export async function getJobs() {
   return res.json();
 }
 
+export async function getLatestPostureInterpretation() {
+  const res = await fetch(`${BASE_URL}/api/posture/latest`);
+  return res.json();
+}
+
+

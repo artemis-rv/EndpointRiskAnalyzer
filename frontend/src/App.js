@@ -4,6 +4,8 @@ import Dashboard from "./pages/Dashboard";
 import Endpoints from "./pages/Endpoints";
 import Agent from "./pages/Agent";
 import Jobs from "./pages/Jobs";
+import Posture from "./pages/Posture";
+
 
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
           <Route path="/endpoints" element={<Endpoints />} />
           <Route path="/agent" element={<Agent />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/posture" element={<Posture />} />
+
 
 
         </Routes>
