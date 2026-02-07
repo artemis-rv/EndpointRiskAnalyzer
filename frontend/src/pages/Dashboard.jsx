@@ -41,6 +41,10 @@ export default function Dashboard() {
         Run Systemic Analysis
       </button>
       
+      <div className="bg-blue-600 text-white p-4 rounded-lg">
+  Tailwind is working
+</div>
+
 
       <button onClick={scheduleScanAll}>
       Schedule Scan (All Endpoints)
