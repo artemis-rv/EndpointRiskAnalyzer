@@ -27,7 +27,8 @@ from pymongo.errors import ConnectionFailure
 
 # MongoDB connection string
 # Example: mongodb://localhost:27017
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+# MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = "mongodb+srv://agentUser:userDemotest@clusterdemo.w4qtpme.mongodb.net/?appName=ClusterDemo"
 
 # Database name for this project
 DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev")  #dev is only for testing
