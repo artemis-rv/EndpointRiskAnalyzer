@@ -20,11 +20,21 @@ def list_jobs():
         jobs = []
     out = []
     for j in jobs:
+        eid = j.get("endpoint_id")
         if not j.get("job_id"):
             continue
+        
+        # Look up hostname
+        hostname = "—"
+        if eid:
+            ep = endpoints_collection().find_one({"endpoint_id": str(eid)})
+            if ep:
+                hostname = ep.get("hostname", "—")
+
         out.append({
             "job_id": j.get("job_id"),
-            "endpoint_id": str(j.get("endpoint_id", "")),
+            "endpoint_id": str(eid or ""),
+            "hostname": hostname,
             "job_type": j.get("job_type", "RUN_SCAN"),
             "status": j.get("status", "pending"),
             "created_at": j.get("created_at"),

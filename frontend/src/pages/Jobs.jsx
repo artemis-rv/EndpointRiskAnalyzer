@@ -41,33 +41,39 @@ export default function Jobs() {
             <table className="min-w-full text-sm">
               <thead className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th className="py-2 pr-4 font-medium">Job ID</th>
-                  <th className="py-2 pr-4 font-medium">Endpoint</th>
-                  <th className="py-2 pr-4 font-medium">Type</th>
-                  <th className="py-2 pr-4 font-medium">Status</th>
-                  <th className="py-2 pr-4 font-medium">Created</th>
+                  <th className="py-2 pr-4 font-black uppercase tracking-widest text-[10px]">Job ID</th>
+                  <th className="py-2 pr-4 font-black uppercase tracking-widest text-[10px]">Endpoint HostName</th>
+                  <th className="py-2 pr-4 font-black uppercase tracking-widest text-[10px]">ID</th>
+                  <th className="py-2 pr-4 font-black uppercase tracking-widest text-[10px]">Type</th>
+                  <th className="py-2 pr-4 font-black uppercase tracking-widest text-[10px]">Status</th>
+                  <th className="py-2 pr-4 font-black uppercase tracking-widest text-[10px]">Created</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {jobs.map((job) => (
-                  <tr key={job.job_id || job._id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                    <td className="py-2 pr-4 font-mono text-xs text-slate-900 dark:text-slate-100">
+                  <tr key={job.job_id || job._id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-150 group">
+                    <td className="py-3 pr-4 font-mono text-[10px] text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                       {job.job_id ? `${String(job.job_id).slice(0, 8)}...` : "—"}
                     </td>
-                    <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">{job.endpoint_id ?? "—"}</td>
-                    <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">{job.job_type ?? "—"}</td>
-                    <td className="py-2 pr-4">
+                    <td className="py-3 pr-4 text-slate-900 dark:text-white font-bold">{job.hostname ?? "—"}</td>
+                    <td className="py-3 pr-4 text-[10px] text-slate-400 dark:text-slate-500 font-medium">{job.endpoint_id ? `${String(job.endpoint_id).slice(0, 8)}...` : "—"}</td>
+                    <td className="py-3 pr-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                        {job.job_type ?? "—"}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4">
                       <span
                         className={
                           job.status === "completed"
-                            ? "inline-flex items-center rounded-full bg-green-100 dark:bg-green-900 px-2 py-0.5 text-xs text-green-800 dark:text-green-200"
-                            : "inline-flex items-center rounded-full border border-slate-300 dark:border-slate-600 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-300"
+                            ? "inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-[10px] font-black uppercase tracking-tight text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                            : "inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-[10px] font-black uppercase tracking-tight text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 animate-pulse"
                         }
                       >
                         {job.status ?? "pending"}
                       </span>
                     </td>
-                    <td className="py-2 pr-4 text-sm text-slate-500 dark:text-slate-400">
+                    <td className="py-3 pr-4 text-[10px] text-slate-500 dark:text-slate-500 font-medium">
                       {formatDateTimeIST(job.created_at)}
                     </td>
                   </tr>

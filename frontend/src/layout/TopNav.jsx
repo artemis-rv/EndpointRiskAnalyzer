@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { scheduleScanAll } from "../api/api";
 import { useTheme } from "../context/ThemeContext";
+import { useNotification } from "../context/NotificationContext";
 
 function NavLink({ to, children }) {
   const location = useLocation();
@@ -22,17 +23,28 @@ function NavLink({ to, children }) {
 
 export default function TopNav() {
   const { theme, toggleTheme } = useTheme();
+  const { showNotification } = useNotification();
+
+  const handleScanAll = async () => {
+    try {
+      showNotification("Scanning in progress...", "info");
+      const data = await scheduleScanAll();
+      showNotification(`Scan completed: ${data?.jobs_created ?? 0} jobs scheduled.`, "success");
+    } catch (error) {
+      showNotification("Scan failed if failure.", "error");
+    }
+  };
 
   return (
-    <div className="sticky top-0 z-50 flex items-center gap-6 px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white shadow-lg transition-all duration-300">
+    <div className="sticky top-0 z-50 flex items-center gap-6 px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 border-b border-slate-700/50 dark:border-slate-800 text-white shadow-lg transition-all duration-300">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+        <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-inner">
           <span className="text-white font-bold text-sm">ER</span>
         </div>
-        <span className="font-semibold text-lg hidden sm:inline">Endpoint Risk</span>
+        <span className="font-semibold text-lg hidden sm:inline tracking-tight">Endpoint Risk</span>
       </div>
 
-      <nav className="flex items-center gap-6">
+      <nav className="hidden md:flex items-center gap-6">
         <NavLink to="/">Dashboard</NavLink>
         <NavLink to="/endpoints">Endpoints</NavLink>
         <NavLink to="/posture">Posture</NavLink>
@@ -42,8 +54,8 @@ export default function TopNav() {
       <div className="flex-1" />
 
       <button
-        onClick={() => scheduleScanAll().then((data) => alert(data?.message ?? `Scheduled ${data?.jobs_created ?? 0} scan(s).`)).catch(() => alert("Failed to schedule scans."))}
-        className="bg-primary-600 hover:bg-primary-500 active:bg-primary-700 px-4 py-2 rounded-lg transition-all duration-200 font-medium text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+        onClick={handleScanAll}
+        className="bg-primary-600 hover:bg-primary-500 active:bg-primary-700 px-4 py-2 rounded-lg transition-all duration-200 font-bold text-xs uppercase tracking-widest text-white shadow-[0_0_15px_-3px_rgba(79,70,229,0.4)] hover:shadow-[0_0_20px_-3px_rgba(79,70,229,0.6)] transform hover:-translate-y-0.5 active:translate-y-0"
       >
         Scan All
       </button>
