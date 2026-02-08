@@ -77,7 +77,6 @@ def run_agent():
 
 
 import requests
-# BACKEND_URL = "http://10.221.151.190:8000"
 BACKEND_URL = "http://127.0.0.1:8000"
 # SCANS_URL = "http://127.0.0.1:8000/api/scans/"
 SCANS_URL = f"{BACKEND_URL}/api/scans/"
