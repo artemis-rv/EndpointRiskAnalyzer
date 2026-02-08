@@ -1,39 +1,43 @@
 import React from 'react';
+import img1 from '../images/img1.jpg';
+import img2 from '../images/img2.jpeg';
 
 const contacts = [
     {
-        name: "Aarav Sharma",
-        role: "Lead Security Architect",
-        email: "aarav.s@endpointrisk.com",
-        phone: "+91 98765 43210",
-        img: "https://i.pravatar.cc/150?u=aarav",
+        name: "Ayaan Mansuri",
+        role: "Security Analyst and Developer",
+        email: "24dce069@charusat.edu.in",
+        // phone: "+91 98765 43210",
+        // img: "https://i.pravatar.cc/150?u=aarav",
+        img: img1,
         github: "https://github.com",
         linkedin: "https://linkedin.com"
     },
     {
-        name: "Ishita Verma",
-        role: "Frontend Engineer",
-        email: "ishita.v@endpointrisk.com",
-        phone: "+91 87654 32109",
-        img: "https://i.pravatar.cc/150?u=ishita",
+        name: "Harsh Joshi",
+        role: "AI/ML Engineer",
+        email: "24dce049@charusat.edu.in",
+        // phone: "+91 87654 32109",
+        // img: "https://i.pravatar.cc/150?u=ishita",
         github: "https://github.com",
         linkedin: "https://linkedin.com"
     },
     {
-        name: "Rohan Gupta",
-        role: "Backend Developer",
-        email: "rohan.g@endpointrisk.com",
-        phone: "+91 76543 21098",
-        img: "https://i.pravatar.cc/150?u=rohan",
+        name: "Manav Merja",
+        role: "Full Stack Developer",
+        email: "24dce074@charusat.edu.in",
+        // phone: "+91 76543 21098",
+        // img: "https://i.pravatar.cc/150?u=rohan",
         github: "https://github.com",
         linkedin: "https://linkedin.com"
     },
     {
-        name: "Sanya Malhotra",
-        role: "DevOps Specialist",
-        email: "sanya.m@endpointrisk.com",
-        phone: "+91 65432 10987",
-        img: "https://i.pravatar.cc/150?u=sanya",
+        name: "Devanshu Khandvi",
+        role: "Frontend Developer",
+        email: "24dce057@charusat.edu.in",
+        // phone: "+91 65432 10987",
+        // img: "https://i.pravatar.cc/150?u=sanya",
+        img: img2,
         github: "https://github.com",
         linkedin: "https://linkedin.com"
     }
@@ -58,7 +62,8 @@ export default function Contact() {
 
                             <div className="relative z-10 flex flex-col items-center text-center">
                                 <div className="w-24 h-24 mb-6 relative">
-                                    <div className="absolute inset-0 bg-indigo-500 rounded-full animate-ping opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                                    {/* <div className="absolute inset-0 bg-indigo-500 rounded-full animate-ping opacity-20 group-hover:opacity-40 transition-opacity"></div> */}
+                                    <div className="absolute inset-0 bg-indigo-500 rounded-full opacity-10 group-hover:opacity-40 transition-opacity"></div>
                                     <img
                                         src={c.img}
                                         alt={c.name}
@@ -71,7 +76,7 @@ export default function Contact() {
 
                                 <div className="space-y-1 mb-6">
                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">{c.email}</p>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{c.phone}</p>
+                                    {/* <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{c.phone}</p> */}
                                 </div>
 
                                 <div className="flex gap-4 mt-auto">

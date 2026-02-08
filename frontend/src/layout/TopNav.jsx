@@ -12,8 +12,8 @@ function NavLink({ to, children }) {
       to={to}
       className={
         isActive
-          ? "font-semibold text-primary-300 dark:text-primary-400 hover:text-primary-200 dark:hover:text-primary-300 transition-colors duration-200"
-          : "hover:text-primary-400 dark:hover:text-primary-300 text-slate-200 dark:text-slate-300 transition-colors duration-200"
+          ? "font-bold text-indigo-600 dark:text-indigo-400 transition-colors duration-200"
+          : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 font-semibold"
       }
     >
       {children}
@@ -36,7 +36,7 @@ export default function TopNav() {
   };
 
   return (
-    <div className="sticky top-0 z-50 flex items-center gap-6 px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 border-b border-slate-700/50 dark:border-slate-800 text-white shadow-lg transition-all duration-300">
+    <div className="sticky top-0 z-50 flex items-center gap-6 px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-soft transition-all duration-300">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-inner">
           <span className="text-white font-bold text-sm">ER</span>

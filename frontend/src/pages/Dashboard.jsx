@@ -111,7 +111,7 @@ export default function Dashboard() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleTriggerAnalysis}
-            className="group px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center gap-2"
+            className="group px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-black shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl dark:hover:shadow-indigo-900/60 transition-all active:scale-95 flex items-center gap-2"
           >
             <span>Run Systemic Analysis</span>
             <svg className="w-4 h-4 text-indigo-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,19 +122,19 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-all">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 hover:scale-[1.02] transition-all">
           <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Total Endpoints</p>
           <p className="text-4xl font-black text-slate-900 dark:text-white">{totalEndpoints}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-all">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 hover:scale-[1.02] transition-all">
           <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Active Agents</p>
           <p className="text-4xl font-black text-slate-900 dark:text-white">
             {activeAgents || activeAgents === 0 ? activeAgents : "N/A"}
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-all">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 hover:scale-[1.02] transition-all">
           <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Last Scan</p>
           <p className="text-xl font-bold text-slate-800 dark:text-slate-200">
             {formatDateTimeIST(lastScan)}

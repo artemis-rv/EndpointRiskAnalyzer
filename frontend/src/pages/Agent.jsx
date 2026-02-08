@@ -9,7 +9,7 @@ export default function Agent() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-2 space-y-6">
-            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-8 hover:shadow-md transition-all">
               <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest mb-4">What does it do?</h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-4">
                 The Endpoint Risk Agent is a high-performance, lightweight background service designed to monitor your system's security posture in real-time. It acts as the "eyes and ears" of the central analyzer.
@@ -29,7 +29,7 @@ export default function Agent() {
               </ul>
             </section>
 
-            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-8 hover:shadow-md transition-all">
               <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest mb-6">How to use this portal</h2>
               <div className="space-y-8">
                 {[
@@ -54,7 +54,7 @@ export default function Agent() {
               </div>
             </section>
 
-            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-8 hover:shadow-md transition-all">
               <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest mb-4">Manual Installation</h2>
               <ol className="space-y-4">
                 {[
@@ -73,7 +73,7 @@ export default function Agent() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-indigo-600 rounded-2xl shadow-lg p-8 text-white relative overflow-hidden group">
+            <div className="bg-indigo-600 rounded-2xl shadow-lg dark:shadow-indigo-900/40 p-8 text-white relative overflow-hidden group hover:shadow-xl transition-all">
               <div className="relative z-10">
                 <h2 className="text-xl font-black uppercase tracking-tight mb-2">Ready to Secure?</h2>
                 <p className="text-indigo-100 text-xs font-medium mb-6 leading-relaxed">Download the latest Windows binary and begin your endpoint audit today.</p>
@@ -87,7 +87,7 @@ export default function Agent() {
               <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
             </div>
 
-            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+            <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-6 hover:shadow-md transition-all">
               <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-3">Enterprise Deployment</h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 For large-scale environments, the agent supports automated deployment via MST/MSI wrappers.

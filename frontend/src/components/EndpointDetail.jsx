@@ -44,68 +44,63 @@ export default function EndpointDetail({ endpoint }) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 overflow-hidden transition-all">
       {/* Header */}
-      <div className="bg-slate-800 text-white p-4">
-        <h3 className="text-lg font-semibold">Endpoint Details</h3>
+      <div className="p-5 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Endpoint Details</h3>
       </div>
 
       {/* Details */}
-      <div className="p-4 space-y-3">
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Hostname</p>
-          <p className="text-sm font-medium text-slate-900">{endpoint.hostname || "—"}</p>
+      <div className="p-5 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hostname</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{endpoint.hostname || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">OS</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{endpoint.os || "—"}</p>
+          </div>
         </div>
 
         <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Operating System</p>
-          <p className="text-sm font-medium text-slate-900">{endpoint.os || "—"}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Endpoint ID</p>
-          <p className="text-sm font-mono text-slate-700 break-all">{endpoint.endpoint_id || "—"}</p>
-        </div>
-
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Last Seen</p>
-          <p className="text-sm font-medium text-slate-900">
+          <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Last Seen</p>
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
             {formatDateTimeIST(endpoint.last_seen)}
           </p>
         </div>
 
-        <div>
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Total Scans</p>
-          <p className="text-sm font-medium text-slate-900">{endpoint.scan_count ?? 0}</p>
-        </div>
-
         {/* View Scans Button */}
-        <div className="pt-3 border-t border-slate-200">
+        <div className="pt-2">
           <button
             onClick={handleViewScans}
-            className="w-full px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
+            className={`w-full px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm ${showScans
+              ? "bg-slate-100 dark:bg-slate-700 text-indigo-600 dark:text-white border border-slate-200 dark:border-slate-600"
+              : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100 dark:shadow-none"
+              }`}
           >
-            {showScans ? "Hide Scans" : "View Scans"}
+            {showScans ? "Hide Assessment" : "View Scan Findings"}
           </button>
         </div>
       </div>
 
       {/* Scans Section */}
       {showScans && (
-        <div className="border-t border-slate-200 bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold text-slate-900 mb-3">Scan History</h4>
-
-          {loading && (
-            <p className="text-sm text-gray-500 animate-pulse">Loading scans...</p>
-          )}
+        <div className="border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Recent Findings</h4>
+            {loading && (
+              <div className="w-4 h-4 border-2 border-slate-300 border-t-indigo-500 rounded-full animate-spin"></div>
+            )}
+          </div>
 
           {!loading && scans.length === 0 && (
-            <p className="text-sm text-gray-500">No scans available.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 italic">No scan records found for this endpoint.</p>
           )}
 
           {!loading && scans.length > 0 && (
-            <div className="space-y-2">
-              {scans.map((scan, idx) => {
+            <div className="space-y-3">
+              {scans.slice(0, 3).map((scan, idx) => {
                 const isExpanded = expandedScan === idx;
                 const riskLevel = scan.scan_data?.risk_assessment?.risk_level || "N/A";
                 const riskFlags = scan.scan_data?.risk_assessment?.risk_flags || [];
@@ -114,31 +109,26 @@ export default function EndpointDetail({ endpoint }) {
                 return (
                   <div
                     key={idx}
-                    className="border border-slate-200 rounded-lg overflow-hidden bg-white"
+                    className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm transition-colors"
                   >
                     <button
                       onClick={() => toggleScanDetail(idx)}
-                      className="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                      className="w-full p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                     >
-                      <div className="flex flex-col items-start gap-2">
-                        <span className="text-sm font-medium text-slate-700">
+                      <div className="flex flex-col items-start gap-1.5">
+                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400">
                           {formatDateTimeIST(scan.scan_time)}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${getRiskColor(
-                              riskLevel
-                            )}`}
-                          >
-                            {riskLevel}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {openPorts.length} port{openPorts.length !== 1 ? "s" : ""}
-                          </span>
-                        </div>
+                        <span
+                          className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-black uppercase tracking-tight ${getRiskColor(
+                            riskLevel
+                          )}`}
+                        >
+                          {riskLevel}
+                        </span>
                       </div>
                       <svg
-                        className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? "rotate-180" : ""
+                        className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? "rotate-180" : ""
                           }`}
                         fill="none"
                         stroke="currentColor"
@@ -147,62 +137,46 @@ export default function EndpointDetail({ endpoint }) {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
+                          strokeWidth={3}
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
                     </button>
 
                     {isExpanded && (
-                      <div className="border-t border-slate-200 p-4 bg-slate-50">
-                        <div className="space-y-4">
-                          {/* Risk Flags Section */}
-                          <div>
-                            <h5 className="text-sm font-semibold text-slate-900 mb-2">
-                              Risk Flags
-                            </h5>
-                            {riskFlags.length === 0 ? (
-                              <p className="text-xs text-gray-500">No risk flags detected</p>
-                            ) : (
-                              <ul className="space-y-1">
-                                {riskFlags.map((flag, flagIdx) => (
-                                  <li key={flagIdx} className="flex items-start gap-2">
-                                    <span className="text-red-500 mt-0.5">⚠</span>
-                                    <span className="text-xs text-slate-700">{flag}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
+                      <div className="border-t border-slate-100 dark:border-slate-700 p-4 bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
+                        {/* Risk Flags Section */}
+                        <div>
+                          <h5 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Finding Flags</h5>
+                          {riskFlags.length === 0 ? (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-500 italic">No anomalies detected.</p>
+                          ) : (
+                            <ul className="space-y-1.5">
+                              {riskFlags.map((flag, flagIdx) => (
+                                <li key={flagIdx} className="flex items-start gap-2 bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700 shadow-xs">
+                                  <span className="text-red-500 font-bold shrink-0">!</span>
+                                  <span className="text-[11px] text-slate-700 dark:text-slate-300 leading-tight font-medium">{flag}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
 
-                          {/* Open Ports Section */}
-                          <div>
-                            <h5 className="text-sm font-semibold text-slate-900 mb-2">
-                              Open Ports
-                            </h5>
-                            {openPorts.length === 0 ? (
-                              <p className="text-xs text-gray-500">No open ports detected</p>
-                            ) : (
-                              <div className="flex flex-wrap gap-1.5">
-                                {openPorts.map((port, portIdx) => (
-                                  <span
-                                    key={portIdx}
-                                    className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-mono"
-                                  >
-                                    {port}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Risk Score */}
-                          {scan.scan_data?.risk_assessment?.risk_score !== undefined && (
-                            <div className="pt-3 border-t border-slate-200">
-                              <p className="text-xs text-gray-600">
-                                <span className="font-medium">Risk Score:</span>{" "}
-                                {scan.scan_data.risk_assessment.risk_score}
-                              </p>
+                        {/* Open Ports Section */}
+                        <div>
+                          <h5 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Network Exposure</h5>
+                          {openPorts.length === 0 ? (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-500 italic">No active listeners found.</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {openPorts.map((port, portIdx) => (
+                                <span
+                                  key={portIdx}
+                                  className="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-md border border-indigo-100 dark:border-indigo-800"
+                                >
+                                  PORT {port}
+                                </span>
+                              ))}
                             </div>
                           )}
                         </div>
