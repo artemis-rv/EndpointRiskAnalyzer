@@ -19,6 +19,10 @@ It is imported by backend routes and services.
 import os
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # -------------------------------
@@ -27,8 +31,7 @@ from pymongo.errors import ConnectionFailure
 
 # MongoDB connection string
 # Example: mongodb://localhost:27017
-# MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-MONGO_URI = "mongodb+srv://agentUser:userDemotest@clusterdemo.w4qtpme.mongodb.net/?appName=ClusterDemo"
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
 # Database name for this project
 DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev")  #dev is only for testing

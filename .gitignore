@@ -1,11 +1,33 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-scans/
-
 manifest.json
 *.spec
 *.exe
 build/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.pyd
+
+# Environment variables
+.env
+.env.*
+
+# Agent build
+build/
+dist/
+*.spec
+
+# Logs & runtime data
+logs/
+scans/
+endpoint_id.txt
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
