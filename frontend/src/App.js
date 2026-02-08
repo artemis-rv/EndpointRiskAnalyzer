@@ -7,6 +7,7 @@ import Endpoints from "./pages/Endpoints";
 import Agent from "./pages/Agent";
 import Jobs from "./pages/Jobs";
 import Posture from "./pages/Posture";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
               <Route path="/agent" element={<Agent />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/posture" element={<Posture />} />
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </MainLayout>
         </BrowserRouter>

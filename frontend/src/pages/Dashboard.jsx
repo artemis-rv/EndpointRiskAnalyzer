@@ -100,7 +100,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-6 bg-slate-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
+    <div className="p-6 bg-slate-100 dark:bg-slate-900 min-h-screen transition-colors duration-300">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Dashboard</h1>
@@ -111,10 +111,10 @@ export default function Dashboard() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleTriggerAnalysis}
-            className="group px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-primary-600 text-white text-sm font-bold shadow-lg shadow-slate-200 dark:shadow-none hover:bg-slate-800 dark:hover:bg-primary-500 hover:shadow-xl transition-all active:scale-95 flex items-center gap-2"
+            className="group px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center gap-2"
           >
             <span>Run Systemic Analysis</span>
-            <svg className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-indigo-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </button>
@@ -173,8 +173,8 @@ export default function Dashboard() {
                   <button
                     onClick={() => toggleEndpointScans(ep.endpoint_id)}
                     className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedEndpoint === ep.endpoint_id
-                      ? "bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-600"
-                      : "bg-slate-900 dark:bg-primary-600 text-white hover:bg-slate-800 dark:hover:bg-primary-500"
+                      ? "bg-slate-100 dark:bg-slate-700 text-indigo-600 dark:text-white border border-slate-200 dark:border-slate-600"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
                       }`}
                   >
                     {selectedEndpoint === ep.endpoint_id ? "Hide Details" : "Scan History"}
@@ -346,7 +346,7 @@ export default function Dashboard() {
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                <p className="text-[10px] font-black text-primary-500 uppercase tracking-widest mb-2">Posture Grade</p>
+                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">Posture Grade</p>
                 <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
                   {interpretation?.interpretation?.organization_overview?.overall_security_health || "STABLE"}
                 </p>
@@ -358,14 +358,14 @@ export default function Dashboard() {
                   .slice(0, 3)
                   .map((obs, idx) => (
                     <div key={idx} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
-                      <span className="text-primary-500 font-black">•</span>
+                      <span className="text-indigo-500 font-black">•</span>
                       <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{obs}</p>
                     </div>
                   ))}
               </div>
 
               <button
-                className="w-full mt-2 py-3 bg-slate-900 dark:bg-primary-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-200 dark:shadow-none hover:bg-slate-800 dark:hover:bg-primary-500 hover:shadow-xl active:scale-95 transition-all"
+                className="w-full mt-2 py-3 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 hover:shadow-xl active:scale-95 transition-all"
                 onClick={() => { window.location.href = "/posture"; }}
               >
                 Full Posture Analysis
@@ -377,7 +377,7 @@ export default function Dashboard() {
 
       <div className="mt-8 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 transition-all">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-2 h-8 bg-slate-900 dark:bg-primary-600 rounded-full"></div>
+          <div className="w-2 h-8 bg-indigo-600 rounded-full"></div>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">System interpretation</h2>
         </div>
         <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-2">

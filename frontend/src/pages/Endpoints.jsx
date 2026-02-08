@@ -56,14 +56,13 @@ export default function Endpoints() {
                     <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Status</th>
                     <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">OS</th>
                     <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Scans</th>
-                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Risk Analysis</th>
                     <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Last Seen</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                   {endpoints.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-400 dark:text-slate-500 italic">
+                      <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-slate-500 italic">
                         No endpoints registered in the system.
                       </td>
                     </tr>
@@ -91,19 +90,11 @@ export default function Endpoints() {
                         </td>
                         <td className="py-4 px-6 text-slate-600 dark:text-slate-400 text-sm font-medium">{ep.os ?? "—"}</td>
                         <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-bold">{ep.scan_count ?? 0}</td>
-                        <td className="py-4 px-6">
-                          <button
-                            onClick={(e) => toggleRiskBreakdown(ep.endpoint_id, e)}
-                            className="bg-slate-900 dark:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors shadow-sm"
-                          >
-                            {expandedRisk[ep.endpoint_id] ? "Hide Risk" : "View Risk"}
-                          </button>
-                        </td>
                         <td className="py-4 px-6 text-slate-500 dark:text-slate-500 text-xs font-medium">
                           {formatDateTimeIST(ep.last_seen)}
                         </td>
                       </tr>
-                      {expandedRisk[ep.endpoint_id] && (
+                      {/* {expandedRisk[ep.endpoint_id] && ( // Removed
                         <tr className="bg-slate-50 dark:bg-slate-900/30">
                           <td colSpan={6} className="px-6 py-4">
                             {loadingScans[ep.endpoint_id] ? (
@@ -141,7 +132,7 @@ export default function Endpoints() {
                             )}
                           </td>
                         </tr>
-                      )}
+                      )} */}
                     </React.Fragment>
                   ))}
                 </tbody>

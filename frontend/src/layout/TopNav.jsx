@@ -49,13 +49,14 @@ export default function TopNav() {
         <NavLink to="/endpoints">Endpoints</NavLink>
         <NavLink to="/posture">Posture</NavLink>
         <NavLink to="/jobs">Jobs</NavLink>
+        <NavLink to="/contact">Contact Us</NavLink>
       </nav>
 
       <div className="flex-1" />
 
       <button
         onClick={handleScanAll}
-        className="bg-primary-600 hover:bg-primary-500 active:bg-primary-700 px-4 py-2 rounded-lg transition-all duration-200 font-bold text-xs uppercase tracking-widest text-white shadow-[0_0_15px_-3px_rgba(79,70,229,0.4)] hover:shadow-[0_0_20px_-3px_rgba(79,70,229,0.6)] transform hover:-translate-y-0.5 active:translate-y-0"
+        className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 px-4 py-2 rounded-lg transition-all duration-200 font-bold text-xs uppercase tracking-widest text-white shadow-[0_0_15px_-3px_rgba(79,70,229,0.4)] hover:shadow-[0_0_20px_-3px_rgba(79,70,229,0.6)] transform hover:-translate-y-0.5 active:translate-y-0"
       >
         Scan All
       </button>
