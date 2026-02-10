@@ -29,7 +29,6 @@ from backend.routes.scans_read import router as scans_read_router
 from backend.routes.analysis import router as analysis_router
 from backend.services.interpretation import router as interpretation_router
 from backend.routes.posture import router as posture_router
-from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.interpretation_read import router as interpretation_read_router
 from backend.routes.agent_jobs import router as agent_jobs_router
 from backend.routes.job_scheduler import router as job_scheduler_router
@@ -74,6 +73,11 @@ def health_check():
     return {"status": "ok"}
 
 
+@app.get("/ping")
+def ping():
+    return {"pong": "pong"}
+
+
 @app.get("/db-health")
 def db_health_check():
     """
@@ -107,6 +111,8 @@ def root():
         "message": "Organizational Security Posture Backend is running"
     }
 
+from backend.routes.ml_routes import router as ml_router
+
 app.include_router(scans_router)
 app.include_router(endpoints_router)
 app.include_router(scans_read_router)
@@ -117,12 +123,10 @@ app.include_router(interpretation_read_router)
 app.include_router(agent_jobs_router)
 app.include_router(job_scheduler_router)
 app.include_router(agent_register_router)
+app.include_router(ml_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8002)
 

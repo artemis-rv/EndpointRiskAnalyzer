@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from backend.db.mongo import agent_jobs_collection, endpoints_collection
@@ -54,7 +54,7 @@ def schedule_scan_all():
                 "endpoint_id": str(eid),
                 "job_type": "RUN_SCAN",
                 "status": "pending",
-                "created_at": datetime.utcnow(),
+                "created_at": datetime.now(timezone.utc),
                 "completed_at": None
             })
             count += 1

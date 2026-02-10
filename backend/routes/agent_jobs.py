@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from backend.db.mongo import agent_jobs_collection
@@ -51,7 +51,7 @@ def mark_job_complete(job_id: str):
         {
             "$set": {
                 "status": "completed",
-                "completed_at": datetime.utcnow()
+                "completed_at": datetime.now(timezone.utc)
             }
         }
     )
@@ -66,6 +66,6 @@ def create_scan_job(endpoint_id: str):
         "endpoint_id": endpoint_id,
         "job_type": "RUN_SCAN",
         "status": "pending",
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
         "completed_at": None
     })

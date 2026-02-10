@@ -77,7 +77,9 @@ def run_agent():
 
 
 import requests
-BACKEND_URL = "http://10.240.46.190:8000"
+# BACKEND_URL = "http://10.240.46.39:8000"
+BACKEND_URL = "http://127.0.0.1:8002"
+print(f"DEBUG: Using BACKEND_URL={BACKEND_URL}")
 # SCANS_URL = "http://127.0.0.1:8000/api/scans/"
 SCANS_URL = f"{BACKEND_URL}/api/scans/"
 
@@ -110,8 +112,6 @@ def send_scan_to_backend(scan_data: dict, endpoint_id: str):
 
 import time
 import requests
-
-# BACKEND_URL = "http://127.0.0.1:8000"
 
 POLL_INTERVAL = 30  # seconds
 

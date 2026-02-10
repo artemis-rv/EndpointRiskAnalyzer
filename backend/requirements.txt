@@ -2,3 +2,6 @@ fastapi
 uvicorn
 pymongo
 pydantic
+scikit-learn
+pandas
+numpy

@@ -1,6 +1,6 @@
 // only 1 update to do instead of all files
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "http://127.0.0.1:8002";
 
 export async function getEndpoints() {
   const res = await fetch(`${BASE_URL}/api/endpoints`);
@@ -30,19 +30,19 @@ export async function triggerInterpretation(snapshotId) {
 }
 
 export async function getLatestInterpretation() {
-  const res = await fetch("http://127.0.0.1:8000/api/interpret/latest");
+  const res = await fetch("http://127.0.0.1:8002/api/interpret/latest");
   return res.json();
 }
 
 export async function scheduleScanAll() {
-  const res = await fetch("http://127.0.0.1:8000/api/jobs/scan/all", {
+  const res = await fetch("http://127.0.0.1:8002/api/jobs/scan/all", {
     method: "POST",
   });
   return res.json();
 }
 
 export async function scheduleScanEndpoint(endpointId) {
-  const res = await fetch(`http://127.0.0.1:8000/api/jobs/scan/${endpointId}`, {
+  const res = await fetch(`http://127.0.0.1:8002/api/jobs/scan/${endpointId}`, {
     method: "POST",
   });
   return res.json();
@@ -56,6 +56,11 @@ export async function getJobs() {
 
 export async function getLatestPostureInterpretation() {
   const res = await fetch(`${BASE_URL}/api/posture/latest`);
+  return res.json();
+}
+
+export async function getRiskScore(endpointId) {
+  const res = await fetch(`${BASE_URL}/api/ml/predict/${endpointId}`);
   return res.json();
 }
 
