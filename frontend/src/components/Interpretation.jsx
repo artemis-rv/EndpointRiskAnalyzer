@@ -31,16 +31,16 @@ export default function Interpretation() {
   const contextNotes = interp?.context_notes || [];
 
   return (
-    <div className="space-y-4 text-sm text-gray-700">
+    <div className="space-y-4 text-sm text-slate-700 dark:text-slate-300">
       <div>
-        <h3 className="font-semibold text-slate-900 mb-1">Overview</h3>
+        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">Overview</h3>
         <p><strong>Total Hosts Analyzed:</strong> {totalHosts}</p>
         <p><strong>Analysis Scope:</strong> {scope}</p>
       </div>
 
       {observations.length > 0 && (
         <div>
-          <h3 className="font-semibold text-slate-900 mb-1">Key Observations</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-1">Key Observations</h3>
           <ul className="list-disc list-inside">
             {observations.map((obs, idx) => (
               <li key={idx}>{typeof obs === "string" ? obs : JSON.stringify(obs)}</li>
@@ -51,7 +51,7 @@ export default function Interpretation() {
 
       {contextNotes.length > 0 && (
         <div>
-          <h3 className="font-semibold text-slate-900 mb-1">Context &amp; Limitations</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-1">Context &amp; Limitations</h3>
           <ul className="list-disc list-inside">
             {contextNotes.map((note, idx) => (
               <li key={idx}>{typeof note === "string" ? note : JSON.stringify(note)}</li>
