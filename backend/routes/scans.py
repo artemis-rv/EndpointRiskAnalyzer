@@ -14,19 +14,21 @@ This module does NOT:
 - Modify scan contents
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
 
 from backend.db.mongo import (
     endpoints_collection,
     endpoint_scans_collection
 )
+from backend.limiter import limiter
 
 router = APIRouter(prefix="/api/scans", tags=["Scans"])
 
 
 @router.post("/")
-def upload_scan(scan: dict):
+@limiter.limit("5/minute")  # Max 5 scans per minute
+def upload_scan(request: Request, scan: dict):
     """
     Receives raw scan data from an endpoint agent.
 

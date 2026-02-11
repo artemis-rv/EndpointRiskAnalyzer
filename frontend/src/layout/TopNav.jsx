@@ -29,9 +29,17 @@ export default function TopNav() {
     try {
       showNotification("Scanning in progress...", "info");
       const data = await scheduleScanAll();
-      showNotification(`Scan completed: ${data?.jobs_created ?? 0} jobs scheduled.`, "success");
+      if (data?.jobs_created > 0) {
+        showNotification(`Scan initiated: ${data.jobs_created} jobs scheduled.`, "success");
+      } else {
+        showNotification("No new scans scheduled (agents may be busy or offline).", "info");
+      }
     } catch (error) {
-      showNotification("Scan failed if failure.", "error");
+      if (error.response && error.response.status === 429) {
+        showNotification("Too many requests. Please wait a moment before improving scan coverage.", "error");
+      } else {
+        showNotification("Failed to schedule scans. Please try again later.", "error");
+      }
     }
   };
 

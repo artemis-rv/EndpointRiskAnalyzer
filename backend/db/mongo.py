@@ -36,7 +36,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
 
 # # Database name for this project
-DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev")  #dev is only for testing
+DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev2")  #dev is only for testing
 #change when deploying
 
 
@@ -81,6 +81,7 @@ def ensure_database_exists():
     """
     Ensure the database and required collections exist.
     MongoDB creates the database and a collection on first write; we do one insert+delete per collection.
+    Also creates necessary indexes including TTL index for job expiration.
     """
     for name in REQUIRED_COLLECTIONS:
         try:
@@ -89,6 +90,18 @@ def ensure_database_exists():
             coll.delete_one({"_init": 1})
         except Exception:
             pass
+    
+    # Create TTL index on agent_jobs collection
+    # MongoDB will automatically delete documents 300 seconds (5 min) after expires_at
+    try:
+        db["agent_jobs"].create_index(
+            "expires_at",
+            expireAfterSeconds=300,
+            name="job_ttl_index"
+        )
+    except Exception as e:
+        # Index might already exist, that's fine
+        pass
 
 
 # -------------------------------
