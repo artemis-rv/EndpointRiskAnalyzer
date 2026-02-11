@@ -1710,6 +1710,9 @@
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
    'systemB\\venv\\Lib\\site-packages\\urllib3\\util\\wait.py',
    'PYMODULE'),
+  ('uuid',
+   'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\uuid.py',
+   'PYMODULE'),
   ('webbrowser',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\webbrowser.py',
    'PYMODULE'),

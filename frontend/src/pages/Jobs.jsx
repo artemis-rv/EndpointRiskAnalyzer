@@ -63,16 +63,23 @@ export default function Jobs() {
                       </span>
                     </td>
                     <td className="py-3 pr-4">
-                      <span
-                        className={
-                          job.status === "completed"
-                            ? "inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 shadow-sm"
-                            : "inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 animate-pulse"
-                        }
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${job.status === "completed" ? "bg-green-500" : "bg-indigo-500"}`}></span>
-                        {job.status ?? "pending"}
-                      </span>
+                      {job.status === "pending" && !job.agent_active ? (
+                        <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-slate-400"></span>
+                          Disconnected
+                        </span>
+                      ) : (
+                        <span
+                          className={
+                            job.status === "completed"
+                              ? "inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 shadow-sm"
+                              : "inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-tight text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 animate-pulse"
+                          }
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${job.status === "completed" ? "bg-green-500" : "bg-indigo-500"}`}></span>
+                          {job.status ?? "pending"}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 pr-4 text-[10px] text-slate-500 dark:text-slate-500 font-medium">
                       {formatDateTimeIST(job.created_at)}

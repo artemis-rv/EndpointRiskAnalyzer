@@ -203,8 +203,15 @@ export default function Dashboard() {
                           {scans[ep.endpoint_id].map((scan, idx) => {
                             const scanKey = `${ep.endpoint_id}-${idx}`;
                             const isExpanded = expandedScan[scanKey];
-                            const riskLevel = scan.scan_data?.risk_assessment?.risk_level || "N/A";
-                            const riskFlags = scan.scan_data?.risk_assessment?.risk_flags || [];
+
+                            // Prefer ML Assessment if available
+                            const mlRisk = scan.ml_assessment;
+                            const legacyRisk = scan.scan_data?.risk_assessment;
+
+                            const riskLevel = mlRisk?.risk || legacyRisk?.risk_level || "N/A";
+                            const riskFlags = legacyRisk?.risk_flags || []; // ML flags might be different, let's keep legacy flags for now or merge?
+                            // ML Details are in mlRisk.details or mlRisk.breakdown
+
                             const openPorts = scan.scan_data?.exposure_posture?.open_ports || [];
 
                             return (
@@ -258,15 +265,22 @@ export default function Dashboard() {
                                       <div>
                                         <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Internal Breakdown</h5>
                                         <div className="space-y-1.5">
-                                          {scan.scan_data?.risk_assessment?.breakdown?.map((item, bIdx) => (
+                                          {/* Use ML Breakdown if available */}
+                                          {(mlRisk?.breakdown || legacyRisk?.breakdown || []).map((item, bIdx) => (
                                             <div key={bIdx} className="flex justify-between items-center text-[10px] p-2 bg-slate-50 dark:bg-slate-900 rounded border border-slate-100 dark:border-slate-700">
                                               <span className="text-slate-600 dark:text-slate-400 font-medium">{item[0]}</span>
-                                              <span className="text-red-600 font-black">+{item[1]} pts</span>
+                                              <span className="text-red-600 font-black">
+                                                {typeof item[1] === 'number' ? item[1].toFixed(2) : item[1]}
+                                              </span>
                                             </div>
                                           ))}
                                           <div className="flex justify-between items-center bg-slate-900 dark:bg-primary-600 text-white p-2.5 rounded-lg shadow-md mt-4">
-                                            <span className="text-[10px] font-black uppercase tracking-tight">Consolidated Risk Score</span>
-                                            <span className="text-sm font-black">{scan.scan_data.risk_assessment.risk_score}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-tight">
+                                              {mlRisk ? "Anomaly Score" : "Consolidated Risk Score"}
+                                            </span>
+                                            <span className="text-sm font-black">
+                                              {mlRisk ? mlRisk.anomaly_score?.toFixed(4) : legacyRisk?.risk_score}
+                                            </span>
                                           </div>
                                         </div>
                                       </div>
@@ -347,7 +361,10 @@ export default function Dashboard() {
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">Posture Grade</p>
-                <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                <p className={`text-lg font-black leading-tight ${(interpretation?.interpretation?.organization_overview?.overall_security_health === "CRITICAL" || interpretation?.interpretation?.organization_overview?.overall_security_health === "UNSTABLE")
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-slate-900 dark:text-white"
+                  }`}>
                   {interpretation?.interpretation?.organization_overview?.overall_security_health || "STABLE"}
                 </p>
               </div>

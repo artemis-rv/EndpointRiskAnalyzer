@@ -84,10 +84,32 @@ def generate_interpretation(org_posture: dict) -> dict:
     for issue in isolated_issues:
         observations.append(interpret_issue(issue))
 
+    # ML Integation
+    ml_stats = org_posture.get("ml_risk_overview", {})
+    high_risk = ml_stats.get("high_risk_count", 0)
+    medium_risk = ml_stats.get("medium_risk_count", 0)
+    anomalies = ml_stats.get("anomalies_detected", 0)
+
+    # Determine Overall Health
+    overall_health = "STABLE"
+    if high_risk > 0:
+        overall_health = "CRITICAL"
+        observations.insert(0, f"CRITICAL: {high_risk} endpoints detected with HIGH risk levels.")
+    elif medium_risk > 0 or anomalies > 0:
+        overall_health = "UNSTABLE"
+        if medium_risk > 0:
+            observations.insert(0, f"WARNING: {medium_risk} endpoints detected with MEDIUM risk levels.")
+        if anomalies > 0:
+            observations.append(f"Anomaly Detection: {anomalies} endpoints showing anomalous behavior patterns.")
+    else:
+        observations.append("No significant anomalies or high-risk patterns detected by ML engine.")
+
     return {
         "organization_overview": {
             "total_hosts_analyzed": summary.get("total_hosts_analyzed"),
-            "analysis_scope": "Passive organizational posture normalization"
+            "analysis_scope": "Passive organizational posture normalization",
+            "overall_security_health": overall_health,
+            "ml_risk_summary": ml_stats
         },
         "key_observations": observations,
         "context_notes": [

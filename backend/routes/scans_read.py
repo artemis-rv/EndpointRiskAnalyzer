@@ -17,6 +17,7 @@ from fastapi import APIRouter, HTTPException
 from bson import ObjectId
 
 from backend.db.mongo import endpoint_scans_collection
+from backend.services.ml_service import predict_risk
 
 router = APIRouter(prefix="/api/scans", tags=["Scans (Read)"])
 
@@ -39,7 +40,8 @@ def get_scans_for_endpoint(endpoint_id: str):
         scans.append({
             "scan_id": str(scan["_id"]),
             "scan_time": scan.get("scan_time"),
-            "scan_data": scan.get("scan_data")
+            "scan_data": scan.get("scan_data"),
+            "ml_assessment": predict_risk(scan.get("scan_data", {}))
         })
 
     return {

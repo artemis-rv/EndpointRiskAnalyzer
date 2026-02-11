@@ -47,6 +47,16 @@ export default function Posture() {
               </span>
             </div>
 
+            <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+              <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Security Posture Grade</p>
+              <p className={`text-2xl font-black ${(overview?.overall_security_health === "CRITICAL" || overview?.overall_security_health === "UNSTABLE")
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-slate-900 dark:text-white"
+                }`}>
+                {overview?.overall_security_health || "STABLE"}
+              </p>
+            </div>
+
             <p className="text-slate-700 dark:text-slate-300">
               <strong>Hosts analyzed:</strong>{" "}
               {overview?.total_hosts_analyzed ?? "N/A"}

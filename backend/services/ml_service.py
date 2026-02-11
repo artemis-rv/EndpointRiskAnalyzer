@@ -244,9 +244,27 @@ def predict_risk(scan_data):
     
     detail_str = ", ".join(details)
     
+    analysis_breakdown = []
+    if risk_level in ["High", "Medium"] or is_anomaly:
+        av_enabled = vector[5]
+        firewall_off = vector[6]
+        
+        if av_enabled == 0:
+            analysis_breakdown.append(["Antivirus Disabled", 0.5])
+        if firewall_off == 1:
+            analysis_breakdown.append(["Firewall Disabled", 0.8])
+        if vector[1] > 0:
+            analysis_breakdown.append([f"{int(vector[1])} Risky Ports", 0.2 * vector[1]])
+        if vector[8] == 1: # large_attack_surface
+             analysis_breakdown.append(["Large Attack Surface", 0.3])
+            
+        if not analysis_breakdown:
+             analysis_breakdown.append(["Anomalous Pattern Detected", abs(score)])
+
     return {
         "risk": risk_level, 
         "anomaly_score": float(score),
         "is_anomaly": bool(is_anomaly) or (risk_level == "High"),
-        "details": detail_str
+        "details": detail_str,
+        "breakdown": analysis_breakdown
     }

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 
 from backend.db.mongo import agent_jobs_collection, endpoints_collection
@@ -24,17 +24,35 @@ def list_jobs():
         if not j.get("job_id"):
             continue
         
-        # Look up hostname
+        # Look up hostname and active status
         hostname = "—"
+        agent_active = False
         if eid:
             ep = endpoints_collection().find_one({"endpoint_id": str(eid)})
             if ep:
                 hostname = ep.get("hostname", "—")
+                # Calculate active status (threshold 2 mins)
+                last_seen = ep.get("last_seen")
+                if last_seen:
+                    try:
+                        if isinstance(last_seen, str):
+                           last_seen = datetime.fromisoformat(last_seen.replace("Z", "+00:00"))
+                        if last_seen.tzinfo is None:
+                            last_seen = last_seen.replace(tzinfo=timezone.utc)
+                        
+                        now = datetime.now(timezone.utc)
+                        delta = now - last_seen
+                        # Active if seen within last 2 minutes
+                        if timedelta(0) < delta < timedelta(minutes=2):
+                            agent_active = True
+                    except Exception:
+                        pass
 
         out.append({
             "job_id": j.get("job_id"),
             "endpoint_id": str(eid or ""),
             "hostname": hostname,
+            "agent_active": agent_active,
             "job_type": j.get("job_type", "RUN_SCAN"),
             "status": j.get("status", "pending"),
             "created_at": j.get("created_at"),

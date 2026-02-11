@@ -19,10 +19,10 @@ It is imported by backend routes and services.
 import os
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # # Load environment variables from .env file
-# load_dotenv()
+load_dotenv()
 
 
 # -------------------------------
@@ -33,7 +33,9 @@ from pymongo.errors import ConnectionFailure
 # Example: mongodb://localhost:27017
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
-# Database name for this project
+
+
+# # Database name for this project
 DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev")  #dev is only for testing
 #change when deploying
 

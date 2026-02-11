@@ -51,12 +51,12 @@ export default function Endpoints() {
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400">
-                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Hostname</th>
-                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Status</th>
-                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">OS</th>
-                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Scans</th>
-                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest">Last Seen</th>
+                  <tr className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-300">
+                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Hostname</th>
+                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Status</th>
+                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">OS</th>
+                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Scans</th>
+                    <th className="text-left py-4 px-6 text-xs font-black uppercase tracking-widest border-b border-slate-100 dark:border-slate-700">Last Seen</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
