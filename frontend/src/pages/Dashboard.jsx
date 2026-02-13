@@ -247,18 +247,63 @@ export default function Dashboard() {
                                       {/* Issues/Flags */}
                                       <div>
                                         <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Findings</h5>
-                                        {riskFlags.length === 0 ? (
-                                          <p className="text-xs text-slate-400 dark:text-slate-500 italic">No anomalies detected.</p>
-                                        ) : (
-                                          <ul className="space-y-1.5">
-                                            {riskFlags.map((flag, flagIdx) => (
-                                              <li key={flagIdx} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                                                <span className="text-red-500 font-bold shrink-0">!</span>
-                                                <span className="text-[11px] text-slate-700 dark:text-slate-300 leading-tight">{flag}</span>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        )}
+                                        {(() => {
+                                          // Extract CIS non-compliant controls
+                                          const cisControls = scan.scan_data?.cis_compliance?.controls || [];
+                                          const nonCompliantCIS = cisControls.filter(c => c.status === "non-compliant");
+
+                                          // Combine risk flags and CIS findings
+                                          const allFindings = [
+                                            ...riskFlags.map(flag => ({ type: 'risk_flag', content: flag })),
+                                            ...nonCompliantCIS.map(c => ({
+                                              type: 'cis',
+                                              control_id: c.control_id,
+                                              name: c.name,
+                                              severity_weight: c.severity_weight,
+                                              details: c.details
+                                            }))
+                                          ];
+
+                                          if (allFindings.length === 0) {
+                                            return (
+                                              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No anomalies detected.</p>
+                                            );
+                                          }
+
+                                          return (
+                                            <ul className="space-y-1.5">
+                                              {allFindings.map((finding, findingIdx) => {
+                                                if (finding.type === 'risk_flag') {
+                                                  return (
+                                                    <li key={`risk-${findingIdx}`} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                      <span className="text-red-500 font-bold shrink-0">!</span>
+                                                      <span className="text-[11px] text-slate-700 dark:text-slate-300 leading-tight">{finding.content}</span>
+                                                    </li>
+                                                  );
+                                                }
+
+                                                // CIS finding
+                                                const severityColor = finding.severity_weight === 3
+                                                  ? "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                                                  : finding.severity_weight === 2
+                                                    ? "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800"
+                                                    : "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800";
+
+                                                return (
+                                                  <li key={`cis-${findingIdx}`} className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                    <div className="flex items-center gap-2">
+                                                      <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tight ${severityColor}`}>
+                                                        CIS {finding.control_id}
+                                                      </span>
+                                                      <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold">{finding.name}</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight pl-1">{finding.details}</span>
+                                                  </li>
+                                                );
+                                              })}
+                                            </ul>
+                                          );
+                                        })()}
                                       </div>
 
                                       {/* Risk Breakdown Section */}

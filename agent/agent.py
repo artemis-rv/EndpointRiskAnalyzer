@@ -18,6 +18,7 @@ import day4
 import json
 import day6_priv_posture as d6
 import day7_exposure as d7
+import day8_cis_compliance as d8
 
 # import day5_anomaly_detect
 
@@ -65,6 +66,10 @@ def run_agent():
 
     #Day 7: exposure check
     scan["exposure_posture"]=d7.collect_exposure_posture()
+    
+    #Day 8: CIS Compliance
+    scan["cis_compliance"]=d8.collect_cis_compliance()
+    
     # Output
     # print(json.dumps(scan, indent=2))
 

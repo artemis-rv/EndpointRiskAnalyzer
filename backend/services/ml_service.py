@@ -23,7 +23,11 @@ FEATURE_COLUMNS = [
     'av_enabled',
     'firewall_any_off',
     'software_count',
-    'large_attack_surface'
+    'large_attack_surface',
+    # CIS Compliance Features
+    'cis_weighted_score',
+    'cis_critical_failures',
+    'cis_total_failures'
 ]
 
 def extract_features(scan_data):
@@ -53,6 +57,17 @@ def extract_features(scan_data):
     # ===== ATTACK SURFACE =====
     features['software_count'] = sec.get('software_count', 0)
     features['large_attack_surface'] = 1 if sec.get('large_attack_surface') else 0
+
+    # ===== CIS COMPLIANCE FEATURES =====
+    cis = scan_data.get('cis_compliance', {})
+    score_data = cis.get('compliance_score', {})
+    
+    features['cis_weighted_score'] = score_data.get('weighted_score', 0)
+    features['cis_critical_failures'] = sum(
+        1 for c in cis.get('controls', []) 
+        if c.get('status') == 'non-compliant' and c.get('severity_weight') == 3
+    )
+    features['cis_total_failures'] = score_data.get('non_compliant_count', 0)
 
     return features
 
@@ -87,7 +102,11 @@ def generate_synthetic_baseline(n_samples=20):
             'av_enabled': 1,
             'firewall_any_off': 0,
             'software_count': np.random.randint(10, 50),
-            'large_attack_surface': 0
+            'large_attack_surface': 0,
+            # CIS Compliance - Good baseline
+            'cis_weighted_score': np.random.randint(85, 100),
+            'cis_critical_failures': 0,
+            'cis_total_failures': np.random.randint(0, 2)
         }
         baseline.append(sample)
     

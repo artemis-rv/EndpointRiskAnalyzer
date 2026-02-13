@@ -67,9 +67,24 @@ def extract_features(scan):
     features["os_build_number"] = build
 
     # ========================
+    # CIS Compliance Features
+    # ========================
+    
+    cis = scan.get("cis_compliance", {})
+    score_data = cis.get("compliance_score", {})
+    
+    features["cis_weighted_score"] = score_data.get("weighted_score", 0)
+    features["cis_critical_failures"] = sum(
+        1 for c in cis.get("controls", []) 
+        if c.get("status") == "non-compliant" and c.get("severity_weight") == 3
+    )
+    features["cis_total_failures"] = score_data.get("non_compliant_count", 0)
+
+    # ========================
     # Risk Calculation
     # ========================
 
     risk=calculate_risk_score(scan,features)
 
     return features, risk
+
