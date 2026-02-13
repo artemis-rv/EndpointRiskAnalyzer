@@ -106,6 +106,49 @@ def analyze_systemic_risk(
         if exposure.get("risky_listening_ports"):
             issue_counter["risky_ports_exposed"] += 1
 
+        # --- CIS Compliance ---
+        cis = scan.get("cis_compliance", {})
+        cis_score = cis.get("compliance_score", {})
+        cis_controls = cis.get("controls", [])
+        
+        # Track CIS weighted score
+        weighted_score = cis_score.get("weighted_score", 0)
+        if weighted_score < 70:  # Below 70% is concerning
+            issue_counter["cis_low_compliance"] += 1
+        
+        # Track critical CIS failures
+        critical_failures = sum(
+            1 for c in cis_controls 
+            if c.get("status") == "non-compliant" and c.get("severity_weight") == 3
+        )
+        if critical_failures > 0:
+            issue_counter["cis_critical_failures"] += 1
+        
+        # Track specific high-impact CIS controls
+        for control in cis_controls:
+            if control.get("status") == "non-compliant":
+                cid = control.get("control_id", "")
+                
+                # Guest Account (Critical)
+                if cid == "2.3.1":
+                    issue_counter["cis_guest_account_enabled"] += 1
+                
+                # BitLocker (Critical)
+                elif cid == "18.9.3":
+                    issue_counter["cis_bitlocker_disabled"] += 1
+                
+                # SMBv1 (Critical)
+                elif cid == "18.3.1":
+                    issue_counter["cis_smbv1_enabled"] += 1
+                
+                # Password Length (High)
+                elif cid == "1.1.1":
+                    issue_counter["cis_weak_password_policy"] += 1
+                
+                # RDP Enabled (High)
+                elif cid == "18.9.1":
+                    issue_counter["cis_rdp_enabled"] += 1
+
     # -------------------------------
     # Normalization: Deciding whether something is an exception or the norm.
     # -------------------------------

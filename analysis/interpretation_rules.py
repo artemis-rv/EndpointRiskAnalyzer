@@ -111,5 +111,72 @@ ISSUE_INTERPRETATIONS = {
         "isolated": lambda: isolated_statement(
             "Listening services on common ports are observed on a limited number of endpoints."
         )
+    },
+
+    # -------------------------------
+    # CIS Compliance Interpretations
+    # -------------------------------
+
+    "cis_low_compliance": {
+        "systemic": lambda: systemic_statement(
+            "CIS Benchmark compliance scores below 70% are common across the organization. This indicates widespread configuration gaps against industry security standards."
+        ),
+        "isolated": lambda: isolated_statement(
+            "CIS Benchmark compliance scores below 70% are observed on select endpoints."
+        )
+    },
+
+    "cis_critical_failures": {
+        "systemic": lambda: systemic_statement(
+            "Critical CIS control failures (severity weight 3) are widespread. Immediate attention required for high-impact security controls like Guest Account, BitLocker, Firewall, and Antivirus."
+        ),
+        "isolated": lambda: isolated_statement(
+            "Critical CIS control failures detected on a limited number of endpoints."
+        )
+    },
+
+    "cis_guest_account_enabled": {
+        "systemic": lambda: systemic_statement(
+            "CIS 2.3.1: Guest account is enabled across many endpoints. This represents a significant unauthorized access risk."
+        ),
+        "isolated": lambda: isolated_statement(
+            "CIS 2.3.1: Guest account is enabled on a limited number of endpoints."
+        )
+    },
+
+    "cis_bitlocker_disabled": {
+        "systemic": lambda: systemic_statement(
+            "CIS 18.9.3: BitLocker encryption is not enabled on system drives across the organization. Data-at-rest protection is insufficient."
+        ),
+        "isolated": lambda: isolated_statement(
+            "CIS 18.9.3: BitLocker encryption is not enabled on select endpoints."
+        )
+    },
+
+    "cis_smbv1_enabled": {
+        "systemic": lambda: systemic_statement(
+            "CIS 18.3.1: SMBv1 protocol remains enabled across many endpoints despite known critical vulnerabilities (WannaCry, NotPetya)."
+        ),
+        "isolated": lambda: isolated_statement(
+            "CIS 18.3.1: SMBv1 protocol is enabled on a limited number of endpoints."
+        )
+    },
+
+    "cis_weak_password_policy": {
+        "systemic": lambda: systemic_statement(
+            "CIS 1.1.1: Minimum password length requirements (14+ characters) are not enforced across the organization."
+        ),
+        "isolated": lambda: isolated_statement(
+            "CIS 1.1.1: Minimum password length requirements are not met on select endpoints."
+        )
+    },
+
+    "cis_rdp_enabled": {
+        "systemic": lambda: systemic_statement(
+            "CIS 18.9.1: Remote Desktop Protocol (RDP) is enabled on the majority of endpoints, increasing remote attack surface."
+        ),
+        "isolated": lambda: isolated_statement(
+            "CIS 18.9.1: Remote Desktop Protocol (RDP) is enabled on a limited number of endpoints."
+        )
     }
 }

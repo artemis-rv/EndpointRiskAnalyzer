@@ -84,7 +84,26 @@ def generate_interpretation(org_posture: dict) -> dict:
     for issue in isolated_issues:
         observations.append(interpret_issue(issue))
 
-    # ML Integation
+    # CIS Compliance Overview
+    cis_overview = org_posture.get("cis_compliance_overview", {})
+    if cis_overview:
+        avg_score = cis_overview.get("average_compliance_score", 0)
+        critical_failures_count = cis_overview.get("endpoints_with_critical_failures", 0)
+        total_hosts = summary.get("total_hosts_analyzed", 0)
+        
+        if avg_score > 0:
+            observations.append(
+                f"CIS Benchmark: Organization average compliance score is {avg_score:.1f}%. "
+                f"{'This meets recommended standards (≥70%).' if avg_score >= 70 else 'This is below recommended threshold of 70%.'}"
+            )
+        
+        if critical_failures_count > 0:
+            observations.insert(0, 
+                f"⚠ CRITICAL: {critical_failures_count} of {total_hosts} endpoints have critical CIS control failures "
+                f"(Guest Account, BitLocker, Firewall, Antivirus, or SMBv1)."
+            )
+
+    # ML Integration
     ml_stats = org_posture.get("ml_risk_overview", {})
     high_risk = ml_stats.get("high_risk_count", 0)
     medium_risk = ml_stats.get("medium_risk_count", 0)

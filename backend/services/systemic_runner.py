@@ -33,6 +33,12 @@ def run_and_store_systemic_analysis():
         "anomalies_detected": 0
     }
     
+    cis_stats = {
+        "total_scans_with_cis": 0,
+        "total_compliance_score": 0,
+        "endpoints_with_critical_failures": 0
+    }
+    
     scans_for_analysis = []
 
     for scan in scans_cursor:
@@ -66,6 +72,25 @@ def run_and_store_systemic_analysis():
                     ml_stats["anomalies_detected"] += 1
             except Exception:
                 pass # Continue if ML fails for one host
+            
+            # CIS Compliance Aggregation
+            cis_data = sdata.get("cis_compliance", {})
+            if cis_data:
+                cis_score = cis_data.get("compliance_score", {})
+                weighted_score = cis_score.get("weighted_score", 0)
+                
+                if weighted_score > 0:
+                    cis_stats["total_scans_with_cis"] += 1
+                    cis_stats["total_compliance_score"] += weighted_score
+                
+                # Check for critical failures
+                cis_controls = cis_data.get("controls", [])
+                critical_failures = sum(
+                    1 for c in cis_controls 
+                    if c.get("status") == "non-compliant" and c.get("severity_weight") == 3
+                )
+                if critical_failures > 0:
+                    cis_stats["endpoints_with_critical_failures"] += 1
 
     if not scans_for_analysis:
         raise ValueError("No scans available for analysis")
@@ -75,6 +100,17 @@ def run_and_store_systemic_analysis():
     
     # Inject ML Stats
     posture_result["ml_risk_overview"] = ml_stats
+    
+    # Inject CIS Compliance Overview
+    cis_overview = {}
+    if cis_stats["total_scans_with_cis"] > 0:
+        avg_score = cis_stats["total_compliance_score"] / cis_stats["total_scans_with_cis"]
+        cis_overview = {
+            "average_compliance_score": round(avg_score, 2),
+            "endpoints_with_critical_failures": cis_stats["endpoints_with_critical_failures"],
+            "endpoints_analyzed": cis_stats["total_scans_with_cis"]
+        }
+    posture_result["cis_compliance_overview"] = cis_overview
 
     # Store snapshot
     snapshot = {

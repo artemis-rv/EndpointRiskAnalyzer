@@ -254,15 +254,19 @@ export default function Dashboard() {
 
                                           // Combine risk flags and CIS findings
                                           const allFindings = [
-                                            ...riskFlags.map(flag => ({ type: 'risk_flag', content: flag })),
+                                            ...riskFlags.map(flag => ({ type: 'risk_flag', content: flag, priority: 999 })), // Risk flags first
                                             ...nonCompliantCIS.map(c => ({
                                               type: 'cis',
                                               control_id: c.control_id,
                                               name: c.name,
                                               severity_weight: c.severity_weight,
-                                              details: c.details
+                                              details: c.details,
+                                              priority: c.severity_weight // 3 = Critical, 2 = High, 1 = Low
                                             }))
                                           ];
+
+                                          // Sort by priority (highest first): Risk flags → Critical → High → Low
+                                          allFindings.sort((a, b) => b.priority - a.priority);
 
                                           if (allFindings.length === 0) {
                                             return (
