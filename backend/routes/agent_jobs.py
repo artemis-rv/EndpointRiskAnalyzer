@@ -97,18 +97,46 @@ def cleanup_expired_jobs():
 
 # job scanning
 def create_scan_job(endpoint_id: str):
-    """Creates a new scan job with 5-minute expiration."""
+    """Creates a new scan job with 2-minute expiration.
+    
+    Args:
+        endpoint_id: The endpoint ID to create the job for
+        
+    Returns:
+        dict: The created job document with job_id, endpoint_id, etc.
+        
+    Raises:
+        Exception: If job creation fails
+    """
     from datetime import timedelta
+    import logging
     
-    now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(minutes=5)
+    logger = logging.getLogger(__name__)
     
-    agent_jobs_collection().insert_one({
-        "job_id": str(uuid.uuid4()),
-        "endpoint_id": endpoint_id,
-        "job_type": "RUN_SCAN",
-        "status": "pending",
-        "created_at": now,
-        "expires_at": expires_at,
-        "completed_at": None
-    })
+    try:
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(minutes=2)  # Standardized to 2 minutes (matches job_scheduler.py)
+        
+        job_doc = {
+            "job_id": str(uuid.uuid4()),
+            "endpoint_id": endpoint_id,
+            "job_type": "RUN_SCAN",
+            "status": "pending",
+            "created_at": now,
+            "expires_at": expires_at,
+            "completed_at": None
+        }
+        
+        result = agent_jobs_collection().insert_one(job_doc)
+        
+        # Verify insertion succeeded
+        if not result.inserted_id:
+            logger.error(f"Failed to create job for endpoint {endpoint_id}: No inserted_id returned")
+            raise Exception("Job creation failed: No inserted_id returned")
+        
+        logger.info(f"Successfully created scan job {job_doc['job_id']} for endpoint {endpoint_id}")
+        return job_doc
+        
+    except Exception as e:
+        logger.error(f"Error creating scan job for endpoint {endpoint_id}: {str(e)}")
+        raise Exception(f"Failed to create scan job: {str(e)}")

@@ -1,10 +1,12 @@
 from fastapi import APIRouter
 from datetime import datetime, timezone, timedelta
 import uuid
+import logging
 
 from backend.db.mongo import agent_jobs_collection, endpoints_collection
 
 router = APIRouter(prefix="/api/jobs", tags=["Job Scheduler"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("/")
@@ -38,7 +40,7 @@ def list_jobs():
             ep = endpoints_collection().find_one({"endpoint_id": str(eid)})
             if ep:
                 hostname = ep.get("hostname", "—")
-                # Calculate active status (threshold 45 seconds for stricter "active" check)
+                # Calculate active status (threshold 60 seconds = 2x polling interval)
                 last_seen = ep.get("last_seen")
                 if last_seen:
                     try:
@@ -49,8 +51,8 @@ def list_jobs():
                         
                         now = datetime.now(timezone.utc)
                         delta = now - last_seen
-                        # Active if seen within last 45 seconds (1.5x heartbeat)
-                        if timedelta(0) < delta < timedelta(seconds=45):
+                        # Active if seen within last 60 seconds (2x heartbeat interval)
+                        if timedelta(0) < delta < timedelta(seconds=60):
                             agent_active = True
                     except Exception:
                         pass
@@ -105,8 +107,8 @@ def schedule_scan_all():
                     last_seen = last_seen.replace(tzinfo=timezone.utc)
                 
                 delta = now - last_seen
-                # Active only if seen within last 45 seconds (strict)
-                if not (timedelta(0) < delta < timedelta(seconds=45)):
+                # Active only if seen within last 60 seconds (2x polling interval)
+                if not (timedelta(0) < delta < timedelta(seconds=60)):
                     status = "disconnected"
             else:
                 status = "disconnected"
@@ -126,8 +128,9 @@ def schedule_scan_all():
             continue
             
         try:
+            job_id = str(uuid.uuid4())
             agent_jobs_collection().insert_one({
-                "job_id": str(uuid.uuid4()),
+                "job_id": job_id,
                 "endpoint_id": str(eid),
                 "job_type": "RUN_SCAN",
                 "status": status,
@@ -136,7 +139,9 @@ def schedule_scan_all():
                 "completed_at": None
             })
             count += 1
-        except Exception:
+            logger.info(f"Created job {job_id} for endpoint {eid} with status '{status}'")
+        except Exception as e:
+            logger.error(f"Failed to create job for endpoint {eid}: {str(e)}")
             continue
 
     return {

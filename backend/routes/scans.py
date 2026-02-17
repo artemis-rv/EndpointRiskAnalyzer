@@ -16,6 +16,7 @@ This module does NOT:
 
 from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
+import logging
 
 from backend.db.mongo import (
     endpoints_collection,
@@ -24,6 +25,7 @@ from backend.db.mongo import (
 from backend.limiter import limiter
 
 router = APIRouter(prefix="/api/scans", tags=["Scans"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/")
@@ -45,8 +47,11 @@ def upload_scan(request: Request, scan: dict):
         hostname = scan.get("hostname") or system_info.get("hostname")
         os_name = scan.get("os") or system_info.get("os")
         agent_endpoint_id = scan.get("endpoint_id")  # Optional: agent's persistent UUID
+        
+        logger.info(f"Received scan from hostname='{hostname}', endpoint_id='{agent_endpoint_id}'")
 
         if not hostname or not os_name:
+            logger.warning(f"Scan rejected: missing hostname or os. hostname={hostname}, os={os_name}")
             raise HTTPException(
                 status_code=400,
                 detail="Scan must include hostname and os"
@@ -95,7 +100,13 @@ def upload_scan(request: Request, scan: dict):
                 "scan_data": scan
             }
 
-        endpoint_scans_collection().insert_one(scan_record)
+        result = endpoint_scans_collection().insert_one(scan_record)
+        
+        if result.inserted_id:
+            logger.info(f"Successfully stored scan for endpoint {agent_endpoint_id or endpoint_id_oid}")
+        else:
+            logger.error(f"Failed to store scan for endpoint {agent_endpoint_id or endpoint_id_oid}: No inserted_id")
+            raise Exception("Scan storage failed: No inserted_id returned")
 
         return {
             "status": "success",
@@ -103,5 +114,8 @@ def upload_scan(request: Request, scan: dict):
             "endpoint_id": agent_endpoint_id or str(endpoint.get("_id", ""))
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error storing scan from {hostname}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

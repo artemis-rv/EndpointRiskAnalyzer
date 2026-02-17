@@ -11,7 +11,7 @@ def detect_java_runtime():
     
         command=["java","--version"]
 
-        output=subprocess.check_output(command,text=True)
+        output=subprocess.check_output(command,text=True,timeout=5)
 
         first_line=output.splitlines()[0]
         # first_line=output.splitlines()[0].split()
@@ -22,6 +22,8 @@ def detect_java_runtime():
     
     except FileNotFoundError:
         return{"present": False, "version_raw": None}
+    except subprocess.TimeoutExpired:
+        return {"present": "Unknown", "error": "Timeout"}
     except Exception as e:
         return {
             "present": "Unknown",
@@ -35,7 +37,7 @@ def detect_python_runtime():
     try:
 
 
-        output=subprocess.check_output(["python","--version"],text=True)
+        output=subprocess.check_output(["python","--version"],text=True,timeout=5)
 
         return {
             "present": True,
@@ -47,6 +49,8 @@ def detect_python_runtime():
             "present": False,
             "version_raw": None
         }
+    except subprocess.TimeoutExpired:
+        return {"present": "Unknown", "error": "Timeout"}
     except Exception as e:
         return {
             "present": "Unknown",

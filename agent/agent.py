@@ -94,7 +94,12 @@ def send_scan_to_backend(scan_data: dict, endpoint_id: str):
     """
     payload = dict(scan_data)
     payload["endpoint_id"] = endpoint_id
-    payload["hostname"] = payload.get("hostname") or socket.gethostname()
+    
+    # Extract hostname and os from system dict if not at top level
+    system_info = payload.get("system", {})
+    payload["hostname"] = payload.get("hostname") or system_info.get("hostname") or socket.gethostname()
+    payload["os"] = payload.get("os") or system_info.get("os") or "Unknown"
+    
     try:
         response = requests.post(
             SCANS_URL,
@@ -107,7 +112,8 @@ def send_scan_to_backend(scan_data: dict, endpoint_id: str):
             print(response.json())
         else:
             print("[-] Backend rejected scan")
-            print(response.status_code, response.text)
+            print(f"Status: {response.status_code}")
+            print(f"Response: {response.text}")
 
     except requests.exceptions.RequestException as e:
         print("[-] Failed to connect to backend")
@@ -154,6 +160,7 @@ def agent_main_loop(endpoint_id: str, hostname: str):
             scan_result = run_agent()
             send_scan_to_backend(scan_result, endpoint_id)
             mark_job_complete(job["job_id"])
+            send_heartbeat(endpoint_id)  # Update status immediately after job completion
             
         time.sleep(POLL_INTERVAL)
 

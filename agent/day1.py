@@ -276,9 +276,13 @@ def get_defender_status():      #powershell
             Selects only the RealTimeProtectionEnabled property
             -ExpandProperty extracts the raw value, not an object wrapper"""
 
-        output=subprocess.check_output(command, text=True).strip()      #removes escape characters
+        output=subprocess.check_output(command, text=True, timeout=5).strip()      #removes escape characters, 5sec timeout
 
         return{"realtime_protection": output}
+    
+    except subprocess.TimeoutExpired:
+        # Defender check took too long, return unknown status and continue scan
+        return{"realtime_protection": "Unknown (Timeout)"}
     
     except subprocess.CalledProcessError:
         return{"realtime_protection": "Unknown"}
@@ -394,7 +398,7 @@ def _fallback_defender_check(reason):
     """
     try:
         command = ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"]
-        output = subprocess.check_output(command, text=True).strip()
+        output = subprocess.check_output(command, text=True, timeout=5).strip()
         
         enabled = output == "True"
         
@@ -415,6 +419,19 @@ def _fallback_defender_check(reason):
                 "any_enabled": enabled if output != "Unknown" else False,
                 "any_realtime_active": enabled if output != "Unknown" else False,
                 "all_definitions_current": None  # Not available via PowerShell
+            }
+        }
+    except subprocess.TimeoutExpired:
+        # Defender check timed out
+        return {
+            "query_method": "timeout",
+            "fallback_reason": f"{reason} + PowerShell timeout",
+            "products": [],
+            "summary": {
+                "total_products": 0,
+                "any_enabled": False,
+                "any_realtime_active": False,
+                "all_definitions_current": False
             }
         }
     except subprocess.CalledProcessError:
@@ -438,7 +455,7 @@ def get_firewall_status():      #netsh
     """
 
     try:
-        output=subprocess.check_output(["netsh", "advfirewall", "show", "allprofiles"], text=True)
+        output=subprocess.check_output(["netsh", "advfirewall", "show", "allprofiles"], text=True, timeout=5)
 
         firewall_status={}
 
@@ -461,6 +478,8 @@ def get_firewall_status():      #netsh
                     firewall_status[current_profile] = "OFF"
 
         return firewall_status
+    except subprocess.TimeoutExpired:
+        return {"Error": "Timeout checking firewall status"}
     except Exception as e:
         return{"Error": str(e)}
 
