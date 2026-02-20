@@ -64,4 +64,23 @@ export async function getRiskScore(endpointId) {
   return res.json();
 }
 
+export async function fetchOrganizationReport() {
+  const res = await fetch(`${BASE_URL}/api/report/organization`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch report");
+  }
+
+  return res.json();
+}
+
+export async function downloadOrganizationReportPDF() {
+  const response = await fetch(`${BASE_URL}/api/report/organization/pdf`);
+
+  if (!response.ok) {
+    throw new Error("Failed to download PDF report");
+  }
+
+  return response.blob();
+}
 

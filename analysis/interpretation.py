@@ -110,17 +110,19 @@ def generate_interpretation(org_posture: dict) -> dict:
     anomalies = ml_stats.get("anomalies_detected", 0)
 
     # Determine Overall Health
-    overall_health = "STABLE"
+    overall_health = "SECURE"  # Default to secure/stable
+    
     if high_risk > 0:
         overall_health = "CRITICAL"
         observations.insert(0, f"CRITICAL: {high_risk} endpoints detected with HIGH risk levels.")
-    elif medium_risk > 0 or anomalies > 0:
-        overall_health = "UNSTABLE"
-        if medium_risk > 0:
-            observations.insert(0, f"WARNING: {medium_risk} endpoints detected with MEDIUM risk levels.")
-        if anomalies > 0:
-            observations.append(f"Anomaly Detection: {anomalies} endpoints showing anomalous behavior patterns.")
+    elif medium_risk > 0:
+        overall_health = "MODERATE"
+        observations.insert(0, f"WARNING: {medium_risk} endpoints detected with MEDIUM risk levels.")
+    elif anomalies > 0:
+        overall_health = "AT RISK" # Less severe than UNSTABLE
+        observations.append(f"Anomaly Detection: {anomalies} endpoints showing anomalous behavior patterns.")
     else:
+        overall_health = "STABLE"
         observations.append("No significant anomalies or high-risk patterns detected by ML engine.")
 
     return {

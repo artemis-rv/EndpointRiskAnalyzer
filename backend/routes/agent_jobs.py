@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api/agent", tags=["Agent Jobs"])
 
 
 @router.get("/jobs/{endpoint_id}")
-@limiter.limit("1/30seconds")  # Max 1 request per 30 seconds
+@limiter.limit("3/minute")  # Max 3 requests per minute (prevents race condition with 30s polling)
 def get_pending_job(request: Request, endpoint_id: str):
     """
     Agent polls for pending jobs assigned to it.

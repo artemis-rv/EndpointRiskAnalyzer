@@ -33,6 +33,7 @@ from backend.routes.interpretation_read import router as interpretation_read_rou
 from backend.routes.agent_jobs import router as agent_jobs_router
 from backend.routes.job_scheduler import router as job_scheduler_router
 from backend.routes.agent_register import router as agent_register_router
+from backend.routes.report import router as report
 
 
 # -------------------------------
@@ -135,6 +136,7 @@ app.include_router(agent_jobs_router)
 app.include_router(job_scheduler_router)
 app.include_router(agent_register_router)
 app.include_router(ml_router)
+app.include_router(report)
 
 
 # if __name__ == "__main__":

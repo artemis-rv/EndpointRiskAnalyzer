@@ -250,7 +250,9 @@ export default function Dashboard() {
                                         {(() => {
                                           // Extract CIS non-compliant controls
                                           const cisControls = scan.scan_data?.cis_compliance?.controls || [];
-                                          const nonCompliantCIS = cisControls.filter(c => c.status === "non-compliant");
+                                          const nonCompliantCIS = cisControls.filter(c =>
+                                            c.status === "non_compliant" || c.status === "non-compliant"
+                                          );
 
                                           // Combine risk flags and CIS findings
                                           const allFindings = [
@@ -333,25 +335,7 @@ export default function Dashboard() {
                                       </div>
                                     </div>
 
-                                    {/* Risky Ports Check - Use risky_listening_ports from exposure_posture */}
-                                    {scan.scan_data?.exposure_posture?.risky_listening_ports?.length > 0 && (
-                                      <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-xl shadow-inner-sm">
-                                        <div className="flex items-center gap-2 mb-3">
-                                          <span className="text-lg">⚠️</span>
-                                          <span className="text-[11px] font-black text-red-700 dark:text-red-400 uppercase tracking-widest">Risky Port Exposure Detected</span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                          {scan.scan_data.exposure_posture.risky_listening_ports.map((portInfo, pIdx) => (
-                                            <div key={pIdx} className="px-3 py-2 bg-red-600 text-white text-[10px] font-black rounded shadow-sm border border-red-700 dark:border-red-500 flex flex-col items-center">
-                                              <span className="text-[11px]">PORT {portInfo.port}</span>
-                                              <span className="text-[9px] font-semibold opacity-90">{portInfo.service}</span>
-                                              <span className="text-[8px] opacity-75">{portInfo.protocol}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                        <p className="mt-2.5 text-[10px] text-red-600 dark:text-red-400 leading-relaxed font-medium">Critical network vulnerability detected. These ports are frequently targeted by automated scanning and exploitation tools. Immediate review suggested.</p>
-                                      </div>
-                                    )}
+                                    {/* Risky Ports Check - Removed per user request */}
                                   </div>
                                 )}
                               </div>
