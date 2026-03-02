@@ -22,6 +22,7 @@ import winreg
 import subprocess
 from typing import Dict, List, Any, Tuple
 import logging
+import re
 
 # Import existing checks to avoid duplication
 from day1 import get_firewall_status, get_antivirus_posture
@@ -134,21 +135,23 @@ def _safe_powershell_exec(command: List[str], timeout: int = 5) -> Tuple[str, st
 # =============================================================================
 
 def check_minimum_password_length() -> Dict[str, Any]:
-    """
+    r"""
     CIS 1.1.1: Ensure 'Minimum password length' is set to 14 or more characters
     
     Multi-source validation:
     - Primary: Registry (HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MinimumPasswordLength)
     - Fallback: secedit export
     """
-    # Primary method: Registry
-    min_length, status, reason = _safe_registry_read(
-        r"SYSTEM\CurrentControlSet\Control\Lsa",
-        "MinimumPasswordLength"
-    )
+
+    min_length,status,reason=_safe_powershell_exec(
+    [
+        "powershell", "-Command",
+        "(net accounts | Select-String 'Minimum password length') -replace '.*:',''"])
+
     
+        
     if status == "success":
-        compliant = min_length >= 14
+        compliant = int(min_length.strip()) >= 14
         return {
             "control_id": "1.1.1",
             "name": "Minimum Password Length",
@@ -448,12 +451,12 @@ def check_firewall_inbound_blocking() -> Dict[str, Any]:
     """
     # Primary method: netsh
     output, status, reason = _safe_powershell_exec([
-        "netsh", "advfirewall", "show", "allprofiles", "state"
+        "netsh", "advfirewall", "show", "allprofiles", "firewallpolicy"
     ], timeout=5)
     
     if status == "success":
         # Check if BlockInbound is present for all profiles
-        inbound_blocked = output.count("BlockInbound") >= 3 or output.count("Block") >= 3
+        inbound_blocked = output.count("BlockInbound") == 3
         return {
             "control_id": "9.1.2/4/6",
             "name": "Firewall Inbound Blocking",

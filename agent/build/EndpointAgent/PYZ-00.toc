@@ -288,6 +288,10 @@
   ('codeop',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\codeop.py',
    'PYMODULE'),
+  ('commctrl',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\lib\\commctrl.py',
+   'PYMODULE'),
   ('compression',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\compression\\__init__.py',
    'PYMODULE'),
@@ -404,6 +408,10 @@
   ('day7_exposure',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
    'systemB\\Main\\EndpointRiskAnalyzer\\agent\\day7_exposure.py',
+   'PYMODULE'),
+  ('day8_cis_compliance',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\Main\\EndpointRiskAnalyzer\\agent\\day8_cis_compliance.py',
    'PYMODULE'),
   ('decimal',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\decimal.py',
@@ -795,6 +803,22 @@
   ('pprint',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\pprint.py',
    'PYMODULE'),
+  ('psutil',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\psutil\\__init__.py',
+   'PYMODULE'),
+  ('psutil._common',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\psutil\\_common.py',
+   'PYMODULE'),
+  ('psutil._ntuples',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\psutil\\_ntuples.py',
+   'PYMODULE'),
+  ('psutil._pswindows',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\psutil\\_pswindows.py',
+   'PYMODULE'),
   ('py_compile',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\py_compile.py',
    'PYMODULE'),
@@ -806,6 +830,51 @@
    'PYMODULE'),
   ('pydoc_data.topics',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\pydoc_data\\topics.py',
+   'PYMODULE'),
+  ('pythoncom',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\pythoncom.py',
+   'PYMODULE'),
+  ('pywin',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\__init__.py',
+   'PYMODULE'),
+  ('pywin.dialogs',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\dialogs\\__init__.py',
+   'PYMODULE'),
+  ('pywin.dialogs.list',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\dialogs\\list.py',
+   'PYMODULE'),
+  ('pywin.dialogs.status',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\dialogs\\status.py',
+   'PYMODULE'),
+  ('pywin.mfc',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\mfc\\__init__.py',
+   'PYMODULE'),
+  ('pywin.mfc.dialog',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\mfc\\dialog.py',
+   'PYMODULE'),
+  ('pywin.mfc.object',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\mfc\\object.py',
+   'PYMODULE'),
+  ('pywin.mfc.thread',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\mfc\\thread.py',
+   'PYMODULE'),
+  ('pywin.mfc.window',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\pywin\\mfc\\window.py',
+   'PYMODULE'),
+  ('pywin32_system32', '-', 'PYMODULE'),
+  ('pywintypes',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\lib\\pywintypes.py',
    'PYMODULE'),
   ('queue',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\queue.py',
@@ -1715,6 +1784,90 @@
    'PYMODULE'),
   ('webbrowser',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\webbrowser.py',
+   'PYMODULE'),
+  ('win32com',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\__init__.py',
+   'PYMODULE'),
+  ('win32com.client',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\__init__.py',
+   'PYMODULE'),
+  ('win32com.client.CLSIDToClass',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\CLSIDToClass.py',
+   'PYMODULE'),
+  ('win32com.client.build',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\build.py',
+   'PYMODULE'),
+  ('win32com.client.dynamic',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\dynamic.py',
+   'PYMODULE'),
+  ('win32com.client.gencache',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\gencache.py',
+   'PYMODULE'),
+  ('win32com.client.genpy',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\genpy.py',
+   'PYMODULE'),
+  ('win32com.client.makepy',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\makepy.py',
+   'PYMODULE'),
+  ('win32com.client.selecttlb',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\selecttlb.py',
+   'PYMODULE'),
+  ('win32com.client.util',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\client\\util.py',
+   'PYMODULE'),
+  ('win32com.server',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\server\\__init__.py',
+   'PYMODULE'),
+  ('win32com.server.dispatcher',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\server\\dispatcher.py',
+   'PYMODULE'),
+  ('win32com.server.exception',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\server\\exception.py',
+   'PYMODULE'),
+  ('win32com.server.policy',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\server\\policy.py',
+   'PYMODULE'),
+  ('win32com.server.util',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\server\\util.py',
+   'PYMODULE'),
+  ('win32com.universal',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\universal.py',
+   'PYMODULE'),
+  ('win32com.util',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32com\\util.py',
+   'PYMODULE'),
+  ('win32con',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\lib\\win32con.py',
+   'PYMODULE'),
+  ('win32traceutil',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\lib\\win32traceutil.py',
+   'PYMODULE'),
+  ('winerror',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\lib\\winerror.py',
+   'PYMODULE'),
+  ('wmi',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\wmi.py',
    'PYMODULE'),
   ('xml',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\xml\\__init__.py',

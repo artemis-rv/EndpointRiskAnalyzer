@@ -78,12 +78,28 @@
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
    'systemB\\venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_setuptools.py',
    'PYSOURCE'),
+  ('pyi_rth_pywintypes',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks\\pyi_rth_pywintypes.py',
+   'PYSOURCE'),
+  ('pyi_rth_pythoncom',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\_pyinstaller_hooks_contrib\\rthooks\\pyi_rth_pythoncom.py',
+   'PYSOURCE'),
   ('agent',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
    'systemB\\Main\\EndpointRiskAnalyzer\\agent\\agent.py',
    'PYSOURCE'),
   ('python314.dll',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\python314.dll',
+   'BINARY'),
+  ('pywin32_system32\\pywintypes314.dll',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\pywin32_system32\\pywintypes314.dll',
+   'BINARY'),
+  ('pywin32_system32\\pythoncom314.dll',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\pywin32_system32\\pythoncom314.dll',
    'BINARY'),
   ('_zstd.pyd',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_zstd.pyd',
@@ -144,8 +160,35 @@
   ('_uuid.pyd',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\_uuid.pyd',
    'EXTENSION'),
+  ('win32\\_win32sysloader.pyd',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\_win32sysloader.pyd',
+   'EXTENSION'),
+  ('win32\\win32api.pyd',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\win32api.pyd',
+   'EXTENSION'),
+  ('Pythonwin\\win32ui.pyd',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\win32ui.pyd',
+   'EXTENSION'),
+  ('win32\\win32event.pyd',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\win32event.pyd',
+   'EXTENSION'),
+  ('win32\\win32trace.pyd',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\win32\\win32trace.pyd',
+   'EXTENSION'),
+  ('psutil\\_psutil_windows.pyd',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\psutil\\_psutil_windows.pyd',
+   'EXTENSION'),
   ('VCRUNTIME140.dll',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\VCRUNTIME140.dll',
+   'BINARY'),
+  ('VCRUNTIME140_1.dll',
+   'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\VCRUNTIME140_1.dll',
    'BINARY'),
   ('libcrypto-3.dll',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\libcrypto-3.dll',
@@ -156,28 +199,32 @@
   ('libffi-8.dll',
    'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\DLLs\\libffi-8.dll',
    'BINARY'),
-  ('VCRUNTIME140_1.dll',
-   'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\VCRUNTIME140_1.dll',
+  ('Pythonwin\\mfc140u.dll',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\Pythonwin\\mfc140u.dll',
    'BINARY'),
-  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\licenses\\LICENSE',
+  ('python3.dll',
+   'C:\\Users\\Home\\AppData\\Local\\Python\\pythoncore-3.14-64\\python3.dll',
+   'BINARY'),
+  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\METADATA',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
-   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\licenses\\LICENSE',
-   'DATA'),
-  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\WHEEL',
-   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
-   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\WHEEL',
-   'DATA'),
-  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\top_level.txt',
-   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
-   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\top_level.txt',
+   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\METADATA',
    'DATA'),
   ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\INSTALLER',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
    'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\INSTALLER',
    'DATA'),
-  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\METADATA',
+  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\licenses\\LICENSE',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
-   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\METADATA',
+   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\licenses\\LICENSE',
+   'DATA'),
+  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\top_level.txt',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\top_level.txt',
+   'DATA'),
+  ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\WHEEL',
+   'D:\\E\\VSCode programs\\SEM 4\\SGP - '
+   'systemB\\venv\\Lib\\site-packages\\setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\WHEEL',
    'DATA'),
   ('setuptools\\_vendor\\importlib_metadata-8.7.1.dist-info\\REQUESTED',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
@@ -207,7 +254,7 @@
  [],
  False,
  False,
- 1770804432,
+ 1771846097,
  [('run.exe',
    'D:\\E\\VSCode programs\\SEM 4\\SGP - '
    'systemB\\venv\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
