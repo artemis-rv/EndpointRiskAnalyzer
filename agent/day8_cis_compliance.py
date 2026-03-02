@@ -139,7 +139,7 @@ def check_minimum_password_length() -> Dict[str, Any]:
     CIS 1.1.1: Ensure 'Minimum password length' is set to 14 or more characters
     
     Multi-source validation:
-    - Primary: Registry (HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MinimumPasswordLength)
+    - Primary: net accounts
     - Fallback: secedit export
     """
 
@@ -168,7 +168,7 @@ def check_minimum_password_length() -> Dict[str, Any]:
 
     output, fallback_status, fallback_reason = _safe_powershell_exec([
         "powershell", "-Command",
-        "(secedit /export /cfg $env:TEMP\secpol.cfg /quiet | Select-String "MinimumPasswordLength" $env:TEMP\secpol.cfg | ForEach-Object { ($_ -split '=')[1].Trim() }; Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue"
+        r"secedit /export /cfg $env:TEMP\secpol.cfg /quiet ; if (Test-Path $env:TEMP\secpol.cfg) { Get-Content $env:TEMP\secpol.cfg | Select-String 'MinimumPasswordLength' | ForEach-Object { ($_ -split '=')[1].Trim() } ; Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue }"
     ], timeout=10)
     
     if fallback_status == "success" and output.isdigit():
@@ -206,12 +206,11 @@ def check_password_complexity() -> Dict[str, Any]:
     
     Multi-source validation:
     - Primary: secedit export
-    - Fallback: Registry check (PasswordComplexity)
     """
     # Primary method: secedit (For standAlone)
     output, status, reason = _safe_powershell_exec([
         "powershell", "-Command",
-        "secedit /export /cfg $env:TEMP\secpol.cfg /quiet | Select-String '^PasswordComplexity\s*=' $env:TEMP\secpol.cfg | ForEach-Object { ($_ -split '=')[1].Trim() }; Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue"
+        r"secedit /export /cfg $env:TEMP\secpol.cfg /quiet ; if (Test-Path $env:TEMP\secpol.cfg) { Get-Content $env:TEMP\secpol.cfg | Select-String '^PasswordComplexity\s*=' | ForEach-Object { ($_ -split '=')[1].Trim() } ; Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue }"
     ], timeout=10)
     
     if status == "success" and output.isdigit():
@@ -228,33 +227,14 @@ def check_password_complexity() -> Dict[str, Any]:
             "remediation_hint": "Enable via Group Policy: Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy"
         }
     
-    # Fallback: net accounts (if domain-joined)
-    complexity_value, fallback_status, fallback_reason = _safe_registry_read(
-        r"SYSTEM\CurrentControlSet\Control\Lsa",
-        "PasswordComplexity"
-    )
-    
-    # if fallback_status == "success":
-    #     complexity_enabled = complexity_value == 1
-    #     return {
-    #         "control_id": "1.1.2",
-    #         "name": "Password Complexity",
-    #         "status": STATUS_COMPLIANT if complexity_enabled else STATUS_NON_COMPLIANT,
-    #         "severity_weight": 2,
-    #         "details": f"Password complexity: {'Enabled' if complexity_enabled else 'Disabled'}",
-    #         "reason": "Complexity requirements enforced" if complexity_enabled else "Complexity requirements not enabled",
-    #         "source_method_used": "registry",
-    #         "confidence_level": "medium",
-    #         "remediation_hint": "Enable via Group Policy: Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy"
-    #     }
-    
+
     # Both methods failed
     return {
         "control_id": "1.1.2",
         "name": "Password Complexity",
-        "status": status if status != "success" else fallback_status,
+        "status": STATUS_NON_COMPLIANT if status != "success" else STATUS_COMPLIANT,
         "severity_weight": 2,
-        "details": f"Primary: {reason}; Fallback: {fallback_reason}",
+        "details": f"Primary: {reason}",
         "reason": "Unable to validate complexity settings",
         "source_method_used": "secedit+registry",
         "confidence_level": "none",
@@ -525,7 +505,7 @@ def check_smbv1_disabled(smbv1_status: bool) -> Dict[str, Any]:
 
 def check_llmnr_disabled() -> Dict[str, Any]:
     """
-    CIS 18.5.1: Ensure 'Turn off multicast name resolution' is enabled (LLMNR disabled)
+    CIS 18.5.1: Ensure 'Turn off Link Local Multicast Name Resolution' is enabled (LLMNR disabled) (used when DNS fails) (can cause DNS poisoning)
     
     Multi-source validation:
     - Primary: Registry (EnableMulticast)
@@ -534,7 +514,7 @@ def check_llmnr_disabled() -> Dict[str, Any]:
     # Primary method: Registry
     llmnr_setting, status, reason = _safe_registry_read(
         r"Software\Policies\Microsoft\Windows NT\DNSClient",
-        "EnableMulticast"
+        "EnableMultiCast"
     )
     
     # EnableMulticast = 0 means LLMNR is disabled (compliant)
@@ -679,15 +659,18 @@ def check_antivirus_compliance(av_posture: Dict[str, Any]) -> List[Dict[str, Any
     
     # Check 1: AV installed and enabled
     av_enabled = summary.get("any_enabled", False)
+    query_method = av_posture.get("query_method", "unknown")
+    confidence = "high" if query_method == "wmi" else "medium"
+
     controls.append({
         "control_id": "13.1",
         "name": "Antivirus Installed & Enabled",
         "status": STATUS_COMPLIANT if av_enabled else STATUS_NON_COMPLIANT,
         "severity_weight": 3,  # Critical
-        "details": f"AV products enabled: {summary.get('total_products', 0)}",
+        "details": f"AV products enabled: {summary.get('total_products', 0)} (via {query_method})",
         "reason": "Antivirus protection is active" if av_enabled else "No active antivirus product detected",
-        "source_method_used": "wmi_securitycenter",
-        "confidence_level": "high",
+        "source_method_used": query_method,
+        "confidence_level": confidence,
         "remediation_hint": "Install and enable Windows Defender or third-party AV"
     })
     

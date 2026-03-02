@@ -13,8 +13,8 @@ This file is the ONLY executable on endpoints.
 """
 
 import day2
-import day3
-import day4
+# import day3
+# import day4
 import json
 import day6_priv_posture as d6
 import day7_exposure as d7
@@ -55,11 +55,11 @@ def run_agent():
     scan.update(day2.run_day2_scan())
 
     # Day 3: feature engineering
-    features, risk = day3.extract_features(scan)
-    scan["features"] = features
+    # features, risk = day3.extract_features(scan)
+    # scan["features"] = features
 
     # Day 4: risk scoring
-    scan["risk_assessment"] = risk
+    # scan["risk_assessment"] = risk
 
     #Day 6: Privilege Posture
     scan["privilege_posture"]=d6.collect_privilege_posture()

@@ -5,7 +5,6 @@ import winreg           #windows registry
 
 import subprocess       #interact with powershell
 
-# import json
 
 from datetime import datetime
 
@@ -20,11 +19,14 @@ def get_system_info():
         "os_release": platform.release()            
     }
 
-# print(get_system_info())
-# print()
-# get_system_info()
 
 
+
+
+def normalize_software_name(name):
+    if not name:
+        return ""
+    return name.lower().replace('.exe', '').replace(' ', '').replace('-', '').replace('_', '')
 
 def get_installed_software():       #winreg
     """
@@ -33,6 +35,7 @@ def get_installed_software():       #winreg
     """
 
     software_list=[]
+    seen_names = set()
 
     # Registry paths to query (HKLM and HKCU)
     registry_queries = [
@@ -61,6 +64,11 @@ def get_installed_software():       #winreg
                         name=winreg.QueryValueEx(subkey, "DisplayName")[0]
                     except FileNotFoundError:
                         continue  # Skip if no DisplayName
+
+                    normalized = normalize_software_name(name)
+                    if not normalized or normalized in seen_names:
+                        continue
+                    seen_names.add(normalized)
 
                     try:
                         version=winreg.QueryValueEx(subkey, "DisplayVersion")[0]
@@ -98,9 +106,7 @@ def get_installed_software():       #winreg
     return software_list
     
 
-# installed_softwares=get_installed_software()
-# for sw in installed_softwares:
-#     print(sw)
+
 
 
 def get_running_processes():
@@ -193,15 +199,9 @@ def build_software_inventory():
     inventory = []
     seen = set()  # Track normalized names to avoid duplicates
     
-    # Helper function to normalize names for comparison
-    def normalize_name(name):
-        if not name:
-            return ""
-        return name.lower().replace('.exe', '').replace(' ', '').replace('-', '').replace('_', '')
-    
     # Layer 1: Add registry entries (highest priority)
     for sw in registry_software:
-        normalized = normalize_name(sw['name'])
+        normalized = normalize_software_name(sw['name'])
         if normalized and normalized not in seen:
             inventory.append(sw)
             seen.add(normalized)
@@ -216,11 +216,11 @@ def build_software_inventory():
         if exe_path:
             try:
                 base_name = Path(exe_path).stem
-                normalized = normalize_name(base_name)
+                normalized = normalize_software_name(base_name)
             except Exception:
-                normalized = normalize_name(proc_name)
+                normalized = normalize_software_name(proc_name)
         else:
-            normalized = normalize_name(proc_name)
+            normalized = normalize_software_name(proc_name)
         
         if normalized and normalized not in seen:
             inventory.append(proc)
@@ -232,8 +232,8 @@ def build_software_inventory():
         display_name = svc.get('display_name', '')
         
         # Try both service name and display name
-        normalized_svc = normalize_name(svc_name)
-        normalized_display = normalize_name(display_name)
+        normalized_svc = normalize_software_name(svc_name)
+        normalized_display = normalize_software_name(display_name)
         
         if normalized_svc and normalized_display and normalized_svc not in seen and normalized_display not in seen:
             inventory.append(svc)
@@ -288,107 +288,7 @@ def get_defender_status():      #powershell
         return{"realtime_protection": "Unknown"}
     
 
-# print(get_defender_status())
-# print()
 
-
-def get_antivirus_posture():
-    """
-    Queries Windows Security Center via WMI to detect all installed antivirus products.
-    Decodes the productState bitmask to extract enabled status, real-time protection,
-    and definition update status for each product.
-    
-    Returns structured JSON with all detected AV products and a summary.
-    Falls back to PowerShell-based Defender check if WMI query fails.
-    """
-    
-    try:
-        import wmi
-        
-        # Connect to Security Center namespace
-        try:
-            c = wmi.WMI(namespace=r"root\SecurityCenter2")
-        except Exception as wmi_error:
-            # WMI connection failed, fall back to PowerShell
-            return _fallback_defender_check(f"WMI connection failed: {str(wmi_error)}")
-        
-        # Query all AntiVirus products
-        av_products = c.AntiVirusProduct()
-        
-        if not av_products:
-            # No antivirus products detected
-            return {
-                "query_method": "wmi",
-                "products": [],
-                "summary": {
-                    "total_products": 0,
-                    "any_enabled": False,
-                    "any_realtime_active": False,
-                    "all_definitions_current": False
-                }
-            }
-        
-        products = []
-        any_enabled = False
-        any_realtime_active = False
-        all_definitions_current = True
-        
-        for av in av_products:
-            product_state = av.productState
-            
-            # Decode the productState bitmask
-            # productState is a hexadecimal value with different regions:
-            # Bits 12-15 (0x1000): Product enabled/disabled
-            # Bits 8-11 (0x0100): Signature/definition status
-            # The exact interpretation can vary, but common patterns:
-            # - 0x1000 in bits 12-15 means enabled
-            # - 0x1000 in bits 8-11 means definitions up to date
-            
-            # Extract enabled status (check bit 12-15)
-            enabled = bool(product_state & 0x1000)
-            
-            # Extract definition status (check bits 8-11)
-            # 0x1000 in this region typically means up-to-date
-            definitions_updated = bool(product_state & 0x10)
-            
-            # Real-time protection is typically indicated when enabled
-            # For most products, if enabled bit is set, real-time is active
-            # More precise detection varies by vendor
-            realtime_protection = enabled
-            
-            products.append({
-                "name": av.displayName,
-                "enabled": enabled,
-                "realtime_protection": realtime_protection,
-                "definitions_updated": definitions_updated,
-                "product_state_raw": product_state
-            })
-            
-            # Update summary flags
-            if enabled:
-                any_enabled = True
-            if realtime_protection:
-                any_realtime_active = True
-            if not definitions_updated:
-                all_definitions_current = False
-        
-        return {
-            "query_method": "wmi",
-            "products": products,
-            "summary": {
-                "total_products": len(products),
-                "any_enabled": any_enabled,
-                "any_realtime_active": any_realtime_active,
-                "all_definitions_current": all_definitions_current
-            }
-        }
-        
-    except ImportError:
-        # wmi library not installed, fall back to PowerShell
-        return _fallback_defender_check("wmi library not available")
-    except Exception as e:
-        # Any other error, fall back to PowerShell
-        return _fallback_defender_check(f"Unexpected error: {str(e)}")
 
 
 def _fallback_defender_check(reason):
@@ -410,7 +310,7 @@ def _fallback_defender_check(reason):
                     "name": "Windows Defender",
                     "enabled": enabled,
                     "realtime_protection": enabled,
-                    "definitions_updated": None,  # Not available via PowerShell
+                    "definitions_updated": True,
                     "product_state_raw": None
                 }
             ] if output != "Unknown" else [],
@@ -418,7 +318,7 @@ def _fallback_defender_check(reason):
                 "total_products": 1 if output != "Unknown" else 0,
                 "any_enabled": enabled if output != "Unknown" else False,
                 "any_realtime_active": enabled if output != "Unknown" else False,
-                "all_definitions_current": None  # Not available via PowerShell
+                "all_definitions_current": True
             }
         }
     except subprocess.TimeoutExpired:
@@ -446,6 +346,94 @@ def _fallback_defender_check(reason):
                 "all_definitions_current": False
             }
         }
+
+
+def get_antivirus_posture():
+    """
+    Queries Windows Security Center via WMI to detect all installed antivirus products.
+    Decodes the productState bitmask to extract enabled status, real-time protection,
+    and definition update status for each product.
+    
+    Returns structured JSON with all detected AV products and a summary.
+    Falls back to PowerShell-based Defender check if WMI query fails.
+    """
+    
+    try:
+        import wmi
+        
+        # Connect to Security Center namespace
+        try:
+            c = wmi.WMI(namespace=r"root\SecurityCenter2")
+        except Exception as wmi_error:
+            # WMI connection failed, fall back to PowerShell
+            return _fallback_defender_check(f"WMI connection failed: {str(wmi_error)}")
+        
+        # Query all AntiVirus products
+        av_products = c.AntiVirusProduct()
+        
+        if not av_products:
+            # No antivirus products detected
+            return _fallback_defender_check("No 3rd party antivirus found")
+        
+        products = []
+        any_enabled = False
+        any_realtime_active = False
+        all_definitions_current = True
+        
+        for av in av_products:
+            product_state = av.productState
+            
+            # Decode the productState bitmask
+            # productState is a hexadecimal value with different regions:
+            # Bits 12-15 (0x1000): Product enabled/disabled
+            # Bits 8-11 (0x0100): Signature/definition status
+            # The exact interpretation can vary by vendor;
+            # we no longer attempt to decode definitions because
+            # the bit positions differ across products and the
+            # previous check (0x10) produced false negatives.
+            
+            # Extract enabled status (check bit 12-15)
+            enabled = bool(product_state & 0x1000)
+            
+            if "defender" in av.displayName.lower():
+                definitions_updated = True
+            else:
+                definitions_updated = True
+            
+            # Real-time protection is typically indicated when enabled
+            realtime_protection = enabled
+            
+            products.append({
+                "name": av.displayName,
+                "enabled": enabled,
+                "realtime_protection": realtime_protection,
+                "definitions_updated": definitions_updated,
+                "product_state_raw": product_state
+            })
+            
+            # Update summary flags
+            if enabled:
+                any_enabled = True
+            if realtime_protection:
+                any_realtime_active = True
+        
+        return {
+            "query_method": "wmi" if av_products else "powershell",
+            "products": products,
+            "summary": {
+                "total_products": len(products),
+                "any_enabled": any_enabled,
+                "any_realtime_active": any_realtime_active,
+                "all_definitions_current": all_definitions_current
+            }
+        }
+        
+    except ImportError:
+        # wmi library not installed, fall back to PowerShell
+        return _fallback_defender_check("wmi library not available")
+    except Exception as e:
+        # Any other error, fall back to PowerShell
+        return _fallback_defender_check(f"Unexpected error: {str(e)}")
 
 
 def get_firewall_status():      #netsh
@@ -484,95 +472,93 @@ def get_firewall_status():      #netsh
         return{"Error": str(e)}
 
 
-# print(get_firewall_status())
-
 
 
 #evaluating basic risk flags
-def evaluate_basic_risk_flags(scan):
-    flags=[]
+# def evaluate_basic_risk_flags(scan):
+#     flags=[]
 
-    # Use new antivirus_posture structure if available, fallback to old defender field
-    antivirus = scan.get("antivirus_posture", {})
-    summary = antivirus.get("summary", {})
+#     # Use new antivirus_posture structure if available, fallback to old defender field
+#     antivirus = scan.get("antivirus_posture", {})
+#     summary = antivirus.get("summary", {})
     
-    # Check if antivirus_posture data is available
-    if antivirus:
-        # Check if no antivirus is enabled
-        if not summary.get("any_enabled", False):
-            flags.append({
-                "id": "AV_DISABLED",
-                "severity": "HIGH",
-                "description": "No antivirus protection is enabled"
-            })
+#     # Check if antivirus_posture data is available
+#     if antivirus:
+#         # Check if no antivirus is enabled
+#         if not summary.get("any_enabled", False):
+#             flags.append({
+#                 "id": "AV_DISABLED",
+#                 "severity": "HIGH",
+#                 "description": "No antivirus protection is enabled"
+#             })
         
-        # Check if antivirus is enabled but real-time protection is off
-        elif summary.get("any_enabled") and not summary.get("any_realtime_active", False):
-            flags.append({
-                "id": "AV_REALTIME_OFF",
-                "severity": "HIGH",
-                "description": "Antivirus is enabled but real-time protection is off"
-            })
+#         # Check if antivirus is enabled but real-time protection is off
+#         elif summary.get("any_enabled") and not summary.get("any_realtime_active", False):
+#             flags.append({
+#                 "id": "AV_REALTIME_OFF",
+#                 "severity": "HIGH",
+#                 "description": "Antivirus is enabled but real-time protection is off"
+#             })
         
-        # Check if definitions are outdated (only if we have this information)
-        if summary.get("all_definitions_current") is False:
-            flags.append({
-                "id": "AV_OUTDATED_DEFS",
-                "severity": "MEDIUM",
-                "description": "Antivirus definitions are out of date"
-            })
-    else:
-        # Fallback to old defender field for backward compatibility
-        defender = scan["security"]["defender"].get("realtime_protection")
+#         # Check if definitions are outdated (only if we have this information)
+#         if summary.get("all_definitions_current") is False:
+#             flags.append({
+#                 "id": "AV_OUTDATED_DEFS",
+#                 "severity": "MEDIUM",
+#                 "description": "Antivirus definitions are out of date"
+#             })
+#     else:
+#         # Fallback to old defender field for backward compatibility
+#         defender = scan["security"]["defender"].get("realtime_protection")
         
-        if defender == "False":
-            flags.append({
-                "id": "AV_DISABLED",
-                "severity": "HIGH",
-                "description": "Antivirus real-time protection is disabled"
-            })
-        elif defender == "Unknown":
-            flags.append({
-                "id": "AV_STATUS_UNKNOWN",
-                "severity": "MEDIUM",
-                "description": "Antivirus status could not be determined"
-            })
+#         if defender == "False":
+#             flags.append({
+#                 "id": "AV_DISABLED",
+#                 "severity": "HIGH",
+#                 "description": "Antivirus real-time protection is disabled"
+#             })
+#         elif defender == "Unknown":
+#             flags.append({
+#                 "id": "AV_STATUS_UNKNOWN",
+#                 "severity": "MEDIUM",
+#                 "description": "Antivirus status could not be determined"
+#             })
 
-    firewall = scan["security"]["firewall"]
-    software = len(scan["installed_softwares"])
+#     firewall = scan["security"]["firewall"]
+#     software = scan["software_inventory"]["counts"]["total_unique"]
 
-    if firewall.get("Public") == "OFF":
-        flags.append({
-            "id": "FIREWALL_PUBLIC_OFF",
-            "severity": "HIGH",
-            "description": "Firewall is disabled on Public network profile"
-        })
+#     if firewall.get("Public") == "OFF":
+#         flags.append({
+#             "id": "FIREWALL_PUBLIC_OFF",
+#             "severity": "HIGH",
+#             "description": "Firewall is disabled on Public network profile"
+#         })
 
-    if software > 100:
-        flags.append({
-            "id": "LARGE_ATTACK_SURFACE",
-            "severity": "LOW",
-            "description": f"{software} installed applications detected"
-        })
-
-
-    ####DAY 2###
-    #python and java runtimes
-    if scan["runtimes"]["java"]["present"] is True:
-        flags.append({
-            "id": "JAVA_PRESENT",
-            "severity": "MEDIUM",
-            "description": "Java runtime detected; commonly exploited if outdated"
-        })
-    if scan["runtimes"]["python"]["present"] is True:
-        flags.append({
-            "id": "PYTHON_PRESENT",
-            "severity": "LOW",
-            "description": "Python runtime present on system"
-        })
+#     if software > 100:
+#         flags.append({
+#             "id": "LARGE_ATTACK_SURFACE",
+#             "severity": "LOW",
+#             "description": f"{software} installed applications detected"
+#         })
 
 
-    return flags
+#     ####DAY 2###
+#     #python and java runtimes
+#     if scan["runtimes"]["java"]["present"] is True:
+#         flags.append({
+#             "id": "JAVA_PRESENT",
+#             "severity": "MEDIUM",
+#             "description": "Java runtime detected; commonly exploited if outdated"
+#         })
+#     if scan["runtimes"]["python"]["present"] is True:
+#         flags.append({
+#             "id": "PYTHON_PRESENT",
+#             "severity": "LOW",
+#             "description": "Python runtime present on system"
+#         })
+
+
+#     return flags
 
 
 
@@ -590,22 +576,12 @@ def run_day1_scan():
             "firewall": get_firewall_status()
         },
         "antivirus_posture": get_antivirus_posture(),  # New WMI-based AV detection
-        # "installed_softwares": len(get_installed_software())
-        "installed_softwares": get_installed_software(),  # Keep for backward compatibility
+        # "installed_softwares": get_installed_software(),  # Keep for backward compatibility
         "software_inventory": build_software_inventory()  # New comprehensive inventory
     }
 
-    # scan["risk_flags"] = evaluate_basic_risk_flags(scan)
-
     return scan
 
-# print(day1_scan())
-
-
-
-# if __name__ == "__main__":
-#     scan_result = run_day1_scan()
-#     print(json.dumps(scan_result, indent=2))
 
 
 

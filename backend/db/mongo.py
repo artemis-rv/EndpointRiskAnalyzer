@@ -37,7 +37,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
 
 # Database name for this project
-DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev1")  #dev is only for testing
+DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev1new")  #dev is only for testing
 #change when deploying
 
 

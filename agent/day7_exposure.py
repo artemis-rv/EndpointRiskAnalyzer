@@ -19,13 +19,17 @@ def is_rdp_enabled():
     return value == 0  # 0 means RDP allowed
 
 def is_smbv1_enabled():
-    value = check_registry_value(
-        r"SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters",
-        "SMB1"
-    )
+    value = subprocess.run(
+        ["powershell", "-Command", 
+        "Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol | Select-Object -ExpandProperty State"],
+        capture_output=True,
+        text=True
+        )
     if value is None:
         return None
-    return value == 1
+    if value == "Enabled":
+        return True
+    return False
 
 def is_remote_registry_enabled():
     try:

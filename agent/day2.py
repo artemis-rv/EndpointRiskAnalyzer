@@ -1,7 +1,7 @@
 import subprocess
 # import json
-from day1 import run_day1_scan, evaluate_basic_risk_flags
-from day3 import extract_features
+from day1 import run_day1_scan
+# from day3 import extract_features
 
 
 def detect_java_runtime():
@@ -69,9 +69,9 @@ def collect_runtimes():
 def run_day2_scan():
     scan = run_day1_scan()
     scan["runtimes"] = collect_runtimes()
-    scan["risk_flags"] = evaluate_basic_risk_flags(scan)
+    # scan["risk_flags"] = evaluate_basic_risk_flags(scan)
 
-    scan["features"],scan["risk_assessment"] = extract_features(scan)
+    # scan["features"],scan["risk_assessment"] = extract_features(scan)
     
     # explanation = explain_with_llm(scan, llm_client)
     # scan.update(explanation)
