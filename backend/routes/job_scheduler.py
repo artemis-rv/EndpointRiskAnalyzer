@@ -127,6 +127,8 @@ def schedule_scan_all():
         if existing_job:
             continue
             
+        expires_at = now + timedelta(minutes=2) if status == "pending" else now + timedelta(seconds=6)
+
         try:
             job_id = str(uuid.uuid4())
             agent_jobs_collection().insert_one({

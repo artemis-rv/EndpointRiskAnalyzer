@@ -778,12 +778,12 @@ def check_event_log_size() -> Dict[str, Any]:
     # Primary method: PowerShell
     output, status, reason = _safe_powershell_exec([
         "powershell", "-Command",
-        "Get-EventLog -LogName Security -Newest 1 | Select-Object -ExpandProperty MaximumKilobytes"
+        "(Get-WinEvent -ListLog Security).MaximumSizeInBytes / 1KB"
     ], timeout=5)
     
     if status == "success" and output.isdigit():
         max_kb = int(output)
-        compliant = max_kb >= 32768  # 32 MB
+        compliant = max_kb >= 196608  # 192 MB
         return {
             "control_id": "17.2.1",
             "name": "Security Log Size",

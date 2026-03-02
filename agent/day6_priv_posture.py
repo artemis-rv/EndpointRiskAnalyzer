@@ -2,15 +2,70 @@ import ctypes
 import winreg
 
 
-#Checks whether the current process token has admin privileges.
-#Can this user install software or alter system state?”
-def is_user_admin():            
+import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
+
+def get_execution_privilege():
+    """
+    Checks if the current process is running elevated (as Administrator).
+    Looks for the well-known SID S-1-5-32-544 (Administrators group).
+    """
     try:
-        return ctypes.windll.shell32.IsUserAnAdmin()    
-    except:
-        return None
-    
-# print(is_user_admin())
+        output = subprocess.check_output(
+            ["whoami", "/groups"], 
+            text=True, 
+            timeout=5,
+            stderr=subprocess.DEVNULL
+        )
+        if "S-1-5-32-544" in output:
+            return "elevated"
+        return "standard"
+    except Exception as e:
+        logger.error(f"Failed to determine execution privilege: {e}")
+        return "unknown"
+
+def get_user_account_role():
+    """
+    Checks the actual user account's local group membership.
+    Determines if the user inherently belongs to the Administrators group.
+    """
+    try:
+        # Get Current User Name
+        whoami_output = subprocess.check_output(
+            ["whoami"], 
+            text=True, 
+            timeout=5,
+            stderr=subprocess.DEVNULL
+        ).strip()
+        
+        # Output format is usually DOMAIN\Username
+        parts = whoami_output.split("\\")
+        if len(parts) == 2:
+            username = parts[1]
+        else:
+            username = whoami_output
+
+        # Get User's Local Group Memberships
+        net_user_output = subprocess.check_output(
+            ["net", "user", username], 
+            text=True, 
+            timeout=5,
+            stderr=subprocess.DEVNULL
+        )
+
+        # Parse local groups
+        for line in net_user_output.splitlines():
+            if line.startswith("Local Group Memberships"):
+                if "*Administrators" in line:
+                    return "local_admin"
+                else:
+                    return "user_standard"
+        return "user_standard"
+    except Exception as e:
+        logger.error(f"Failed to determine user account role: {e}")
+        return "unknown"
 
 
 # Controls whether User Account Control is enforced.
@@ -29,27 +84,41 @@ def is_uac_enabled():
 
 def collect_privilege_posture():
     data = {
-        "user_is_admin": None,
+        "execution_privilege": "unknown",
+        "user_account_role": "unknown",
         "uac_enabled": None,
         "confidence": "high",
         "evidence": [],
         "errors": []
     }
 
-    admin_status = is_user_admin()
-    if admin_status is not None:
-        data["user_is_admin"] = admin_status
-        data["evidence"].append("Checked admin token via Windows API")
-    else:
+    # Track distinct execution elevation
+    exec_priv = get_execution_privilege()
+    data["execution_privilege"] = exec_priv
+    if exec_priv == "unknown":
         data["confidence"] = "medium"
-        data["errors"].append("Unable to determine admin status")
+        data["errors"].append("Unable to determine execution elevation.")
+    else:
+        data["evidence"].append(f"Execution Privilege: {exec_priv}")
 
+    # Track user role
+    user_role = get_user_account_role()
+    data["user_account_role"] = user_role
+    if user_role == "unknown":
+        if data["confidence"] != "medium":
+            data["confidence"] = "medium"
+        data["errors"].append("Unable to determine local user account role.")
+    else:
+        data["evidence"].append(f"User Account Role: {user_role}")
+
+    # Track UAC
     uac = is_uac_enabled()
     if uac is not None:
         data["uac_enabled"] = uac
         data["evidence"].append("Read EnableLUA from registry")
     else:
-        data["confidence"] = "medium"
-        data["errors"].append("Unable to read UAC configuration")
+        if data["confidence"] != "medium":
+            data["confidence"] = "medium"
+        data["errors"].append("Unable to read UAC configuration from Registry")
 
     return data

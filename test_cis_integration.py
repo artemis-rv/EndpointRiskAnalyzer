@@ -19,8 +19,7 @@ sys.path.insert(0, backend_path)
 # Import after path setup
 import day8_cis_compliance
 from day8_cis_compliance import collect_cis_compliance
-import day3
-from day3 import extract_features
+from services.ml_service import extract_features as ml_extract
 
 
 class TestCISIntegration(unittest.TestCase):
@@ -28,7 +27,7 @@ class TestCISIntegration(unittest.TestCase):
     
     def test_collect_cis_compliance_structure(self):
         """Verify CIS data structure from collection"""
-        print("\\n[TEST] Collecting CIS compliance data...")
+        print("\n[TEST] Collecting CIS compliance data...")
         
         cis_data = collect_cis_compliance()
         
@@ -62,7 +61,7 @@ class TestCISIntegration(unittest.TestCase):
     
     def test_feature_extraction_with_cis(self):
         """Verify ML feature extraction includes CIS metrics"""
-        print("\\n[TEST] Testing feature extraction with CIS data...")
+        print("\n[TEST] Testing feature extraction with CIS data...")
         
         # Create mock scan data with CIS compliance
         mock_scan = {
@@ -75,11 +74,23 @@ class TestCISIntegration(unittest.TestCase):
                 "defender": {"realtime_protection": "True"},
                 "firewall": {"Public": "ON", "Private": "ON", "Domain": "ON"}
             },
-            "runtimes": {
-                "java": {"present": False},
-                "python": {"present": False}
+            "software_inventory": {
+                "counts": {
+                    "total_unique": 2
+                }
             },
-            "installed_softwares": [{"name": "App1"}, {"name": "App2"}],
+            "antivirus_posture": {
+                "summary": {
+                    "any_enabled": True
+                }
+            },
+            "exposure_posture": {
+                "listening_ports_count": 5,
+                "risky_listening_ports": [],
+                "rdp_enabled": False,
+                "winrm_enabled": False,
+                "remote_registry_enabled": False
+            },
             "cis_compliance": {
                 "controls": [
                     {"status": "compliant", "severity_weight": 3},
@@ -97,7 +108,7 @@ class TestCISIntegration(unittest.TestCase):
             }
         }
         
-        features, risk = extract_features(mock_scan)
+        features = ml_extract(mock_scan)
         
         # Verify CIS features are extracted
         self.assertIn("cis_weighted_score", features)
@@ -127,18 +138,22 @@ class TestCISIntegration(unittest.TestCase):
             
             # Create mock scan data
             mock_scan = {
+                "software_inventory": {
+                    "counts": {
+                        "total_unique": 25
+                    }
+                },
+                "antivirus_posture": {
+                    "summary": {
+                        "any_enabled": True
+                    }
+                },
                 "exposure_posture": {
                     "rdp_enabled": False,
                     "winrm_enabled": False,
-                    "remote_registry_enabled": False
-                },
-                "risky_listening_ports": [],
-                "listening_ports_count": 10,
-                "features": {
-                    "av_enabled": 1,
-                    "firewall_any_off": 0,
-                    "software_count": 25,
-                    "large_attack_surface": 0
+                    "remote_registry_enabled": False,
+                    "risky_listening_ports": [],
+                    "listening_ports_count": 10
                 },
                 "cis_compliance": {
                     "controls": [

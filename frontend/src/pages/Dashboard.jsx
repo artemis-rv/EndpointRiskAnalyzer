@@ -343,7 +343,7 @@ export default function Dashboard() {
 
                                       {/* Risk Breakdown Section */}
                                       <div>
-                                        <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Internal Breakdown</h5>
+                                        <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Potential Risks</h5>
                                         <div className="space-y-1.5">
                                           {/* Show only factor names, no individual scores */}
                                           {(mlRisk?.breakdown || legacyRisk?.breakdown || []).map((item, bIdx) => (

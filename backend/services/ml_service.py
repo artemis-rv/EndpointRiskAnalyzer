@@ -33,39 +33,47 @@ FEATURE_COLUMNS = [
 def extract_features(scan_data):
     features = {}
 
-    # ===== NETWORK FEATURES =====
-    features['listening_ports_count'] = scan_data.get(
-        'listening_ports_count', 0
-    )
+    # Extract posture objects from scan data for modularity
+    exposure = scan_data.get('exposure_posture', {})
+    security = scan_data.get('security', {})
+    av_posture = scan_data.get('antivirus_posture', {})
+    software = scan_data.get('software_inventory', {})
+    cis = scan_data.get('cis_compliance', {})
 
-    risky_ports = scan_data.get('risky_listening_ports', [])
+    # ===== NETWORK FEATURES =====
+    features['listening_ports_count'] = exposure.get('listening_ports_count', 0)
+
+    risky_ports = exposure.get('risky_listening_ports', [])
     features['risky_ports_count'] = len(risky_ports) if isinstance(risky_ports, list) else 0
 
     # ===== EXPOSURE POSTURE =====
-    exposure = scan_data.get('exposure_posture', {})
-
     features['remote_registry_enabled'] = 1 if exposure.get('remote_registry_enabled') else 0
     features['winrm_enabled'] = 1 if exposure.get('winrm_enabled') else 0
     features['rdp_enabled'] = 1 if exposure.get('rdp_enabled') else 0
 
     # ===== SECURITY FEATURES =====
-    sec = scan_data.get('features', {})
-
-    features['av_enabled'] = 1 if sec.get('av_enabled') else 0
-    features['firewall_any_off'] = 1 if sec.get('firewall_any_off') else 0
+    # Using the summary status from antivirus_posture (WMI-based)
+    features['av_enabled'] = 1 if av_posture.get('summary', {}).get('any_enabled') else 0
+    
+    # Check if any firewall profile is OFF (Domain, Private, or Public)
+    firewall = security.get('firewall', {})
+    firewall_off = any(str(state).upper() == "OFF" for state in firewall.values())
+    features['firewall_any_off'] = 1 if firewall_off else 0
 
     # ===== ATTACK SURFACE =====
-    features['software_count'] = sec.get('software_count', 0)
-    features['large_attack_surface'] = 1 if sec.get('large_attack_surface') else 0
+    # Use the total unique software count from the comprehensive inventory
+    software_count = software.get('counts', {}).get('total_unique', 0)
+    features['software_count'] = software_count
+    features['large_attack_surface'] = 1 if software_count > 100 else 0
 
     # ===== CIS COMPLIANCE FEATURES =====
-    cis = scan_data.get('cis_compliance', {})
     score_data = cis.get('compliance_score', {})
     
     features['cis_weighted_score'] = score_data.get('weighted_score', 0)
     features['cis_critical_failures'] = sum(
         1 for c in cis.get('controls', []) 
-        if c.get('status') == 'non-compliant' and c.get('severity_weight') == 3
+        if str(c.get('status', '')).lower() in ['non-compliant', 'non_compliant'] 
+        and c.get('severity_weight') == 3
     )
     features['cis_total_failures'] = score_data.get('non_compliant_count', 0)
 
@@ -86,29 +94,64 @@ def get_training_data():
             
     return pd.DataFrame(data)
 
-def generate_synthetic_baseline(n_samples=20):
+def generate_synthetic_baseline():
     """
-    Generates synthetic 'good' endpoint data to serve as a baseline.
+    Generates synthetic benchmark endpoint data representing 'Good', 'Medium', and 'High' risk.
+    This provides anchor points for KMeans scaling, avoiding treating normal endpoints as massive anomalies.
     """
     baseline = []
-    for _ in range(n_samples):
-        # Good security posture
-        sample = {
-            'listening_ports_count': np.random.randint(5, 15),
+    
+    # Generate 50 'Good' (Normal) endpoints
+    # Reflects typical corporate build, not an impossible utopia
+    for _ in range(50):
+        baseline.append({
+            'listening_ports_count': np.random.randint(20, 80), # Normal windows PC has 40+ ports listening
             'risky_ports_count': 0,
             'remote_registry_enabled': 0,
             'winrm_enabled': 0,
             'rdp_enabled': 0,
             'av_enabled': 1,
             'firewall_any_off': 0,
-            'software_count': np.random.randint(10, 50),
+            'software_count': np.random.randint(20, 120),
             'large_attack_surface': 0,
-            # CIS Compliance - Good baseline
-            'cis_weighted_score': np.random.randint(85, 100),
+            'cis_weighted_score': np.random.randint(70, 100),
             'cis_critical_failures': 0,
-            'cis_total_failures': np.random.randint(0, 2)
-        }
-        baseline.append(sample)
+            'cis_total_failures': np.random.randint(0, 5)
+        })
+
+    # Generate 15 'Medium' risk endpoints
+    for _ in range(15):
+        baseline.append({
+            'listening_ports_count': np.random.randint(60, 120),
+            'risky_ports_count': np.random.randint(0, 2),
+            'remote_registry_enabled': np.random.choice([0, 1], p=[0.7, 0.3]),
+            'winrm_enabled': np.random.choice([0, 1], p=[0.5, 0.5]),
+            'rdp_enabled': np.random.choice([0, 1], p=[0.5, 0.5]),
+            'av_enabled': 1,
+            'firewall_any_off': 0,
+            'software_count': np.random.randint(100, 200),
+            'large_attack_surface': 1,
+            'cis_weighted_score': np.random.randint(40, 70),
+            'cis_critical_failures': np.random.randint(0, 2),
+            'cis_total_failures': np.random.randint(5, 15)
+        })
+
+    # Generate 10 'High' (Bad) risk endpoints
+    for _ in range(10):
+        baseline.append({
+            'listening_ports_count': np.random.randint(100, 200),
+            'risky_ports_count': np.random.randint(1, 5),
+            'remote_registry_enabled': 1,
+            'winrm_enabled': 1,
+            'rdp_enabled': 1,
+            'av_enabled': np.random.choice([0, 1], p=[0.8, 0.2]), # Often no AV
+            'firewall_any_off': np.random.choice([0, 1], p=[0.2, 0.8]), # Often firewall off
+            'software_count': np.random.randint(150, 300),
+            'large_attack_surface': 1,
+            'cis_weighted_score': np.random.randint(10, 40),
+            'cis_critical_failures': np.random.randint(2, 6),
+            'cis_total_failures': np.random.randint(15, 30)
+        })
     
     return pd.DataFrame(baseline)
 
@@ -130,7 +173,7 @@ def train_models():
     df_real = get_training_data()
     
     # Get synthetic baseline
-    df_baseline = generate_synthetic_baseline(n_samples=20)
+    df_baseline = generate_synthetic_baseline()
     
     # Combine
     if df_real.empty:
@@ -431,11 +474,15 @@ def predict_risk(scan_data):
     
     # Anomaly Score
     score = MODEL_IF.decision_function(X_new)[0]
-    is_anomaly = MODEL_IF.predict(X_new)[0] == -1
+    raw_is_anomaly = MODEL_IF.predict(X_new)[0] == -1
     
     # Risk Level (KMeans classification)
     cluster = MODEL_KM["model"].predict([[score]])[0]
     risk_level = MODEL_KM["mapping"].get(cluster, "Unknown")
+    
+    # Strictly define an "anomaly" for the dashboard as High risk only.
+    # If the model thinks it's a moderate deviation (Medium), we don't flag it as an anomaly.
+    is_anomaly = (risk_level == "High")
     
     # Categorical Anomaly Assessment
     anomaly_category = categorize_anomaly_score(score)
@@ -482,7 +529,7 @@ def predict_risk(scan_data):
     return {
         "risk": risk_level, 
         "anomaly_score": float(score),  # Keep for internal use, but don't display to user
-        "is_anomaly": bool(is_anomaly) or (risk_level == "High"),
+        "is_anomaly": is_anomaly,
         "details": detail_str,
         "breakdown": analysis_breakdown,
         # NEW: Categorical Anomaly Assessment
