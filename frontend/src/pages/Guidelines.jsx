@@ -83,19 +83,19 @@ export default function Guidelines() {
                                 </svg>
                             </div>
                             <div>
-                                <h4 className="font-semibold text-lg">CIS_Company_Benchmarks.pdf</h4>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm">Last updated: Oct 2025 • 2.4 MB</p>
+                                <h4 className="font-semibold text-lg max-w-sm truncate whitespace-nowrap" title="CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf">CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf</h4>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm">Last updated: Mar 2026 • 8.0 MB</p>
                             </div>
                         </div>
                         <div className="flex gap-3 mt-4 md:mt-0">
-                            <button className="px-4 py-2 flex items-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold transition-colors">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                Open in Tab
-                            </button>
-                            <button className="px-4 py-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-soft">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download
-                            </button>
+                            <a title="Open in New Tab" href="/CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 flex items-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold transition-colors">
+                                <svg alt="Open in New Tab" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+
+                            </a>
+                            <a title="Download" href="/CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" download="CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" className="px-4 py-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-soft">
+                                <svg alt="Download" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+
+                            </a>
                         </div>
                     </div>
                 </Card>

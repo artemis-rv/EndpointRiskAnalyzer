@@ -55,8 +55,8 @@ export default function TopNav() {
       <nav className="hidden md:flex items-center gap-6">
         <NavLink to="/">Dashboard</NavLink>
         <NavLink to="/endpoints">Endpoints</NavLink>
-        <NavLink to="/posture">Posture</NavLink>
         <NavLink to="/analysis">Analysis</NavLink>
+        <NavLink to="/posture">Posture</NavLink>
         <NavLink to="/guidelines">Guidelines</NavLink>
         <NavLink to="/jobs">Jobs</NavLink>
       </nav>
