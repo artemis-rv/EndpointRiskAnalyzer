@@ -21,7 +21,7 @@ export default function Guidelines() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                     {/* Hardened */}
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-default">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-4 h-4 rounded-full bg-green-500"></div>
                             <h3 className="font-bold text-lg text-green-900 dark:text-green-400">Hardened</h3>
@@ -33,7 +33,7 @@ export default function Guidelines() {
                     </div>
 
                     {/* Moderate */}
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-default">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
                             <h3 className="font-bold text-lg text-yellow-900 dark:text-yellow-400">Moderate</h3>
@@ -45,7 +45,7 @@ export default function Guidelines() {
                     </div>
 
                     {/* At Risk */}
-                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-6">
+                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-default">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-4 h-4 rounded-full bg-orange-500"></div>
                             <h3 className="font-bold text-lg text-orange-900 dark:text-orange-400">At Risk</h3>
@@ -57,7 +57,7 @@ export default function Guidelines() {
                     </div>
 
                     {/* Critical */}
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-default">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-4 h-4 rounded-full bg-red-500"></div>
                             <h3 className="font-bold text-lg text-red-900 dark:text-red-400">Critical</h3>

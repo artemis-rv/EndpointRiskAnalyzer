@@ -53,6 +53,8 @@ def _latest_scan_for_endpoint(endpoint_id: str):
     )
 
 
+from backend.services.remediation_data import get_remediation_for_control
+
 def _build_priority_actions(control_failure_count: dict):
     top_failed_controls = sorted(
         control_failure_count.items(),
@@ -61,10 +63,19 @@ def _build_priority_actions(control_failure_count: dict):
     )[:5]
     if not top_failed_controls:
         return ["No critical remediation action required from latest scans."]
-    return [
-        f"Remediate control {control_name} across {count} endpoint(s)."
-        for control_name, count in top_failed_controls
-    ]
+        
+    actions = []
+    for control_key, count in top_failed_controls:
+        # control_key is formatted as "1.1.1 - Name"
+        try:
+            control_id = control_key.split(" - ")[0]
+            remediation = get_remediation_for_control(control_id)
+            fix_command = remediation.get("manual_fix_command", "No specific fix available.")
+            actions.append(f"Remediate {control_key} across {count} endpoint(s). Fix: {fix_command}")
+        except Exception:
+            actions.append(f"Remediate {control_key} across {count} endpoint(s).")
+            
+    return actions
 
 
 def _compliance_band(avg_compliance: float) -> str:

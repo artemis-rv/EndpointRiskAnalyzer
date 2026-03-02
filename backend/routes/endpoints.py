@@ -77,3 +77,69 @@ def list_endpoints():
         "total_endpoints": len(results),
         "endpoints": results
     }
+
+
+from bson import ObjectId
+from backend.services.remediation_data import get_remediation_for_control
+
+@router.get("/{endpoint_id}")
+def get_endpoint_detail(endpoint_id: str):
+    """
+    Returns full details for a specific endpoint, including its latest scan,
+    and enriches failed CIS controls with remediation strategies.
+    """
+    # 1. Fetch Endpoint Metadata
+    endpoint = endpoints_collection().find_one({"endpoint_id": endpoint_id})
+    if not endpoint and ObjectId.is_valid(endpoint_id):
+        endpoint = endpoints_collection().find_one({"_id": ObjectId(endpoint_id)})
+        
+    if not endpoint:
+        return {"status": "error", "message": "Endpoint not found"}
+
+    # 2. Fetch Latest Scan
+    eid = endpoint.get("endpoint_id") or endpoint["_id"]
+    latest_scan = endpoint_scans_collection().find_one(
+        {"endpoint_id": eid},
+        sort=[("scan_time", -1)]
+    )
+
+    if not latest_scan:
+        return {
+            "status": "success",
+            "endpoint": {
+                "endpoint_id": str(eid),
+                "hostname": endpoint.get("hostname"),
+                "os": endpoint.get("os"),
+                "last_seen": endpoint.get("last_seen"),
+                "agent_active": _is_agent_active(endpoint.get("last_seen"))
+            },
+            "latest_scan": None
+        }
+        
+    scan_data = latest_scan.get("scan_data", {})
+    
+    # 3. Enrich Failed Controls with Remediation Metadata
+    cis_data = scan_data.get("cis_compliance", {})
+    controls = cis_data.get("controls", [])
+    
+    for control in controls:
+        status = str(control.get("status", "")).lower()
+        if status in {"non_compliant", "non-compliant"}:
+            control_id = str(control.get("control_id", ""))
+            remediation = get_remediation_for_control(control_id)
+            control["remediation"] = remediation
+
+    return {
+        "status": "success",
+        "endpoint": {
+            "endpoint_id": str(eid),
+            "hostname": endpoint.get("hostname"),
+            "os": endpoint.get("os"),
+            "last_seen": endpoint.get("last_seen"),
+            "agent_active": _is_agent_active(endpoint.get("last_seen"))
+        },
+        "latest_scan": {
+            "scan_time": latest_scan.get("scan_time"),
+            "data": scan_data
+        }
+    }

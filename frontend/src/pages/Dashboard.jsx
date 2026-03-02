@@ -51,11 +51,13 @@ export default function Dashboard() {
   const handleTriggerAnalysis = async () => {
     try {
       await triggerAnalysis();
-      setShowNewStatus(true);
       // Refresh interpretation after a short delay
       setTimeout(() => {
         getLatestInterpretation().then((data) => {
           setInterpretation(data.status === "empty" ? null : data);
+          setShowNewStatus(true);
+          // Hide '(new)' tag after 8 seconds
+          setTimeout(() => setShowNewStatus(false), 8000);
         });
       }, 5000);
     } catch (error) {
