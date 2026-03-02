@@ -57,7 +57,7 @@ export default function TopNav() {
         <NavLink to="/endpoints">Endpoints</NavLink>
         <NavLink to="/posture">Posture</NavLink>
         <NavLink to="/jobs">Jobs</NavLink>
-        <NavLink to="/contact">Contact Us</NavLink>
+        {/* <NavLink to="/contact">Contact Us</NavLink> */}
       </nav>
 
       <div className="flex-1" />

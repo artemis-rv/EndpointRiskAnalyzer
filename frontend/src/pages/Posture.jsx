@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { getLatestInterpretation, downloadOrganizationReportPDF } from "../api/api";
+import { getLatestInterpretation, getLatestPosture, downloadOrganizationReportPDF } from "../api/api";
 import { formatDateTimeIST } from "../utils/dateUtils";
 
 
 export default function Posture() {
   const [data, setData] = useState(null);
+  const [livePosture, setLivePosture] = useState(null);
   const [loading, setLoading] = useState(true);
   const handleDownloadReport = async () => {
     try {
@@ -33,17 +34,47 @@ export default function Posture() {
 
 
   useEffect(() => {
-    getLatestInterpretation()
-      .then((res) => {
-        setData(res.status === "empty" ? null : res);
-      })
-      .finally(() => setLoading(false));
+    const load = async () => {
+      try {
+        const [interp, posture] = await Promise.all([
+          getLatestInterpretation(),
+          getLatestPosture(),
+        ]);
+        setData(interp.status === "empty" ? null : interp);
+        setLivePosture(posture?.live_summary || null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+    const interval = setInterval(load, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const interp = data?.interpretation;
   const overview = interp?.organization_overview ?? interp;
-  const keyObservations = interp?.key_observations || [];
+  const keyObservations = livePosture?.key_observations?.length
+    ? livePosture.key_observations
+    : interp?.key_observations || [];
   const contextNotes = interp?.context_notes || [];
+  const liveSummary = livePosture?.summary || {};
+
+  const highlightObservation = (text) => {
+    if (!text || typeof text !== "string") return text;
+    const parts = text.split(/(\b\d+(?:\.\d+)?%?\b|HIGH|MEDIUM|LOW|CRITICAL|At Risk|Hardened|Moderate Risk)/gi);
+    return parts.map((part, idx) => {
+      const isKey = /^(?:\d+(?:\.\d+)?%?|HIGH|MEDIUM|LOW|CRITICAL|At Risk|Hardened|Moderate Risk)$/i.test(part);
+      if (!isKey) return <span key={idx}>{part}</span>;
+      return (
+        <span
+          key={idx}
+          className="inline-block rounded px-1 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-black"
+        >
+          {part}
+        </span>
+      );
+    });
+  };
 
   return (
     <div className="p-6 bg-slate-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
@@ -102,6 +133,34 @@ export default function Posture() {
                 }
               </p>
             </div>
+            {livePosture?.status === "success" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-900/40">
+                  <p className="text-[10px] uppercase font-black text-slate-500">Live Compliance Score</p>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {liveSummary.average_compliance_score ?? 0}%
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-900/40">
+                  <p className="text-[10px] uppercase font-black text-slate-500">Compliance Band</p>
+                  <p className="text-xl font-black text-slate-900 dark:text-white">
+                    {liveSummary.compliance_band || "N/A"}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-900/40">
+                  <p className="text-[10px] uppercase font-black text-slate-500">High Risk Endpoints</p>
+                  <p className="text-lg font-black text-red-600 dark:text-red-400">
+                    {liveSummary.risk_distribution?.high ?? 0}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-900/40">
+                  <p className="text-[10px] uppercase font-black text-slate-500">Critical CIS Failures</p>
+                  <p className="text-lg font-black text-red-600 dark:text-red-400">
+                    {liveSummary.total_critical_failures ?? 0}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <p className="text-slate-700 dark:text-slate-300">
               <strong>Hosts analyzed:</strong>{" "}
@@ -128,7 +187,7 @@ export default function Posture() {
             {keyObservations.length > 0 && (
               <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300">
                 {keyObservations.map((obs, idx) => (
-                  <li key={idx}>{typeof obs === "string" ? obs : JSON.stringify(obs)}</li>
+                  <li key={idx}>{typeof obs === "string" ? highlightObservation(obs) : JSON.stringify(obs)}</li>
                 ))}
               </ul>
             )}

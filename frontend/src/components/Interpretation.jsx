@@ -29,6 +29,22 @@ export default function Interpretation() {
   const scope = overview?.analysis_scope ?? "N/A";
   const observations = interp?.key_observations || [];
   const contextNotes = interp?.context_notes || [];
+  const highlightObservation = (text) => {
+    if (!text || typeof text !== "string") return text;
+    const parts = text.split(/(\b\d+(?:\.\d+)?%?\b|HIGH|MEDIUM|LOW|CRITICAL|At Risk|Hardened|Moderate Risk)/gi);
+    return parts.map((part, idx) => {
+      const isKey = /^(?:\d+(?:\.\d+)?%?|HIGH|MEDIUM|LOW|CRITICAL|At Risk|Hardened|Moderate Risk)$/i.test(part);
+      if (!isKey) return <span key={idx}>{part}</span>;
+      return (
+        <span
+          key={idx}
+          className="inline-block rounded px-1 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-black"
+        >
+          {part}
+        </span>
+      );
+    });
+  };
 
   return (
     <div className="space-y-4 text-sm text-slate-700 dark:text-slate-300">
@@ -43,7 +59,7 @@ export default function Interpretation() {
           <h3 className="font-semibold text-slate-900 dark:text-white mb-1">Key Observations</h3>
           <ul className="list-disc list-inside">
             {observations.map((obs, idx) => (
-              <li key={idx}>{typeof obs === "string" ? obs : JSON.stringify(obs)}</li>
+              <li key={idx}>{typeof obs === "string" ? highlightObservation(obs) : JSON.stringify(obs)}</li>
             ))}
           </ul>
         </div>

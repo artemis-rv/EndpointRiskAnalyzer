@@ -55,6 +55,8 @@ def generate_pdf_from_report(report_data: dict):
         f"Total Endpoints: {exec_summary.get('total_endpoints')}",
         f"Critical Failures: {exec_summary.get('total_critical_failures')}",
         f"High Failures: {exec_summary.get('total_high_failures')}",
+        f"Moderate Failures: {exec_summary.get('total_moderate_failures')}",
+        f"Latest Scan Time: {exec_summary.get('latest_scan_at')}",
     ]
 
     for line in summary_lines:
@@ -75,22 +77,26 @@ def generate_pdf_from_report(report_data: dict):
     elements.append(Spacer(1, 0.3 * inch))
 
     # Endpoint Table
-    elements.append(Paragraph("<b>Endpoint Compliance Overview</b>", styles["Heading2"]))
+    elements.append(Paragraph("<b>Endpoint Compliance Overview (Latest Scan Per Endpoint)</b>", styles["Heading2"]))
     elements.append(Spacer(1, 0.1 * inch))
 
     endpoint_table = report.get("endpoint_table", [])
 
-    table_data = [["Hostname", "Compliance %", "Critical Failures", "Deviation"]]
+    table_data = [["Hostname", "OS", "Compliance %", "Risk", "Critical", "High", "Moderate", "Scan Time"]]
 
     for ep in endpoint_table:
         table_data.append([
             ep.get("hostname"),
+            ep.get("os"),
             ep.get("compliance_score"),
+            ep.get("deviation_level"),
             ep.get("critical_failures"),
-            ep.get("deviation_level")
+            ep.get("high_failures"),
+            ep.get("moderate_failures"),
+            ep.get("scan_time"),
         ])
 
-    table = Table(table_data)
+    table = Table(table_data, repeatRows=1)
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),

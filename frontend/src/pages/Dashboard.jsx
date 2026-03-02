@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [loadingScans, setLoadingScans] = useState({});
   const [expandedScan, setExpandedScan] = useState({});
   const [showNewStatus, setShowNewStatus] = useState(false);
+  const liveSummary = posture?.live_summary;
 
   useEffect(() => {
     const loadEndpoints = () =>
@@ -29,12 +30,22 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    getLatestPosture().then(setPosture);
-    getLatestInterpretation()
-      .then((data) => {
-        setInterpretation(data.status === "empty" ? null : data);
-      })
-      .finally(() => setLoadingInterpretation(false));
+    const loadPosture = () => getLatestPosture().then(setPosture);
+    const loadInterpretation = () =>
+      getLatestInterpretation()
+        .then((data) => {
+          setInterpretation(data.status === "empty" ? null : data);
+        })
+        .finally(() => setLoadingInterpretation(false));
+
+    loadPosture();
+    loadInterpretation();
+    const interval = setInterval(() => {
+      loadPosture();
+      loadInterpretation();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleTriggerAnalysis = async () => {
@@ -55,11 +66,29 @@ export default function Dashboard() {
   const totalEndpoints = endpoints.length;
   const activeAgents = endpoints.filter((ep) => ep.agent_active === true).length;
   const lastScan =
+    liveSummary?.generated_at ||
     posture?.generated_at ||
     posture?.latest_scan_at ||
     posture?.last_scan_at ||
     posture?.created_at ||
     interpretation?.generated_at;
+
+  const highlightObservation = (text) => {
+    if (!text || typeof text !== "string") return text;
+    const parts = text.split(/(\b\d+(?:\.\d+)?%?\b|HIGH|MEDIUM|LOW|CRITICAL|At Risk|Hardened|Moderate Risk)/gi);
+    return parts.map((part, idx) => {
+      const isKey = /^(?:\d+(?:\.\d+)?%?|HIGH|MEDIUM|LOW|CRITICAL|At Risk|Hardened|Moderate Risk)$/i.test(part);
+      if (!isKey) return <span key={idx}>{part}</span>;
+      return (
+        <span
+          key={idx}
+          className="inline-block rounded px-1 py-0.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-black"
+        >
+          {part}
+        </span>
+      );
+    });
+  };
 
   const toggleEndpointScans = (endpointId) => {
     if (selectedEndpoint === endpointId) {
@@ -389,7 +418,9 @@ export default function Dashboard() {
             <div className="space-y-4">
               <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-700">
                 <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter mb-0.5">Global Analysis Version</p>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{formatDateTimeIST(interpretation.generated_at)}</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {formatDateTimeIST(liveSummary?.generated_at || interpretation.generated_at)}
+                </p>
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
@@ -400,16 +431,46 @@ export default function Dashboard() {
                   }`}>
                   {interpretation?.interpretation?.organization_overview?.overall_security_health || "STABLE"}
                 </p>
+                {liveSummary?.summary && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+                      <p className="text-[10px] text-slate-500 uppercase font-black">Compliance</p>
+                      <p className="text-sm font-black text-slate-900 dark:text-white">
+                        {liveSummary.summary.average_compliance_score ?? 0}%
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+                      <p className="text-[10px] text-slate-500 uppercase font-black">Band</p>
+                      <p className="text-sm font-black text-slate-900 dark:text-white">
+                        {liveSummary.summary.compliance_band || "N/A"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+                      <p className="text-[10px] text-slate-500 uppercase font-black">High Risk</p>
+                      <p className="text-sm font-black text-red-600 dark:text-red-400">
+                        {liveSummary.summary.risk_distribution?.high ?? 0}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-2">
+                      <p className="text-[10px] text-slate-500 uppercase font-black">Critical CIS</p>
+                      <p className="text-sm font-black text-red-600 dark:text-red-400">
+                        {liveSummary.summary.total_critical_failures ?? 0}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
                 <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Key Insights</p>
-                {(interpretation?.interpretation?.key_observations || [])
+                {(liveSummary?.key_observations?.length
+                  ? liveSummary.key_observations
+                  : interpretation?.interpretation?.key_observations || [])
                   .slice(0, 3)
                   .map((obs, idx) => (
                     <div key={idx} className="flex gap-2 items-start bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                       <span className="text-indigo-500 font-black">•</span>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{obs}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{highlightObservation(obs)}</p>
                     </div>
                   ))}
               </div>
