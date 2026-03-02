@@ -14,7 +14,7 @@ This module does NOT:
 - Modify scan contents
 """
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from datetime import datetime, timezone
 import logging
 
@@ -23,6 +23,7 @@ from backend.db.mongo import (
     endpoint_scans_collection
 )
 from backend.limiter import limiter
+from backend.api_auth import verify_api_key
 
 router = APIRouter(prefix="/api/scans", tags=["Scans"])
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/")
 @limiter.limit("5/minute")  # Max 5 scans per minute
-def upload_scan(request: Request, scan: dict):
+def upload_scan(request: Request, scan: dict, auth_endpoint_id: str = Depends(verify_api_key)):
     """
     Receives raw scan data from an endpoint agent.
 
@@ -56,6 +57,11 @@ def upload_scan(request: Request, scan: dict):
                 status_code=400,
                 detail="Scan must include hostname and os"
             )
+
+        if agent_endpoint_id and agent_endpoint_id != auth_endpoint_id:
+            logger.warning(f"Scan rejected: token endpoint_id={auth_endpoint_id} does not match payload endpoint_id={agent_endpoint_id}")
+            raise HTTPException(status_code=403, detail="Forbidden: Token does not match endpoint_id")
+
 
         # Prefer agent's endpoint_id (UUID); else match by hostname for backward compatibility
         if agent_endpoint_id:

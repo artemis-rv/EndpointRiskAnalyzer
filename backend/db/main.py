@@ -124,6 +124,7 @@ def root():
     }
 
 from backend.routes.ml_routes import router as ml_router
+from backend.routes.analytics import router as analytics_charts_router
 
 app.include_router(scans_router)
 app.include_router(endpoints_router)
@@ -137,6 +138,7 @@ app.include_router(job_scheduler_router)
 app.include_router(agent_register_router)
 app.include_router(ml_router)
 app.include_router(report)
+app.include_router(analytics_charts_router)
 
 
 # if __name__ == "__main__":

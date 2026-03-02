@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends, HTTPException
 from datetime import datetime, timezone, timedelta
 import uuid
 
 from backend.db.mongo import agent_jobs_collection
 from backend.limiter import limiter
+from backend.api_auth import verify_api_key
 
 router = APIRouter(prefix="/api/agent", tags=["Agent Jobs"])
 
 
 @router.get("/jobs/{endpoint_id}")
 @limiter.limit("3/minute")  # Max 3 requests per minute (prevents race condition with 30s polling)
-def get_pending_job(request: Request, endpoint_id: str):
+def get_pending_job(request: Request, endpoint_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
     """
     Agent polls for pending jobs assigned to it.
     Returns ONE non-expired job at a time. endpoint_id must match what was stored (UUID or legacy id).
@@ -18,6 +19,9 @@ def get_pending_job(request: Request, endpoint_id: str):
     endpoint_id = (endpoint_id or "").strip()
     if not endpoint_id:
         return {"status": "no_job"}
+
+    if endpoint_id != auth_endpoint_id:
+        raise HTTPException(status_code=403, detail="Forbidden: Token does not match endpoint_id")
 
     now = datetime.now(timezone.utc)
 
@@ -50,10 +54,17 @@ def get_pending_job(request: Request, endpoint_id: str):
 
 
 @router.post("/jobs/{job_id}/complete")
-def mark_job_complete(job_id: str):
+def mark_job_complete(job_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
     """
     Agent marks job as completed.
     """
+    # Verify the job belongs to the authenticated endpoint
+    job = agent_jobs_collection().find_one({"job_id": job_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if str(job.get("endpoint_id")) != auth_endpoint_id:
+        raise HTTPException(status_code=403, detail="Forbidden: Cannot complete job for another endpoint")
 
     agent_jobs_collection().update_one(
         {"job_id": job_id},

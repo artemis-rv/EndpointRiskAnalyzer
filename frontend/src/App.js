@@ -8,6 +8,8 @@ import Endpoints from "./pages/Endpoints";
 import Agent from "./pages/Agent";
 import Jobs from "./pages/Jobs";
 import Posture from "./pages/Posture";
+import Analysis from "./pages/Analysis";
+import Guidelines from "./pages/Guidelines";
 import Contact from "./pages/Contact";
 import PageTransition from "./components/PageTransition";
 
@@ -21,6 +23,8 @@ function AnimatedRoutes() {
         <Route path="/agent" element={<PageTransition><Agent /></PageTransition>} />
         <Route path="/jobs" element={<PageTransition><Jobs /></PageTransition>} />
         <Route path="/posture" element={<PageTransition><Posture /></PageTransition>} />
+        <Route path="/analysis" element={<PageTransition><Analysis /></PageTransition>} />
+        <Route path="/guidelines" element={<PageTransition><Guidelines /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
       </Routes>
     </AnimatePresence>
