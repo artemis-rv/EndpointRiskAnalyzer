@@ -1,7 +1,7 @@
 // only 1 update to do instead of all files
 
 const BASE_URL = "http://127.0.0.1:8000";
-// const BASE_URL = "http://192.168.1.76:8000";
+
 
 export async function getEndpoints() {
   const res = await fetch(`${BASE_URL}/api/endpoints`);

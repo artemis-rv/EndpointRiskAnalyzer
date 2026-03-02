@@ -165,9 +165,10 @@ def check_minimum_password_length() -> Dict[str, Any]:
         }
     
     # Fallback method: secedit
+
     output, fallback_status, fallback_reason = _safe_powershell_exec([
         "powershell", "-Command",
-        "(secedit /export /cfg $env:TEMP\\secpol.cfg /quiet; Get-Content $env:TEMP\\secpol.cfg | Select-String 'MinimumPasswordLength') -replace '.*= ','' ; Remove-Item $env:TEMP\\secpol.cfg -ErrorAction SilentlyContinue"
+        "(secedit /export /cfg $env:TEMP\secpol.cfg /quiet | Select-String "MinimumPasswordLength" $env:TEMP\secpol.cfg | ForEach-Object { ($_ -split '=')[1].Trim() }; Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue"
     ], timeout=10)
     
     if fallback_status == "success" and output.isdigit():
@@ -207,10 +208,10 @@ def check_password_complexity() -> Dict[str, Any]:
     - Primary: secedit export
     - Fallback: Registry check (PasswordComplexity)
     """
-    # Primary method: secedit
+    # Primary method: secedit (For standAlone)
     output, status, reason = _safe_powershell_exec([
         "powershell", "-Command",
-        "(secedit /export /cfg $env:TEMP\\secpol.cfg /quiet; Get-Content $env:TEMP\\secpol.cfg | Select-String 'PasswordComplexity') -replace '.*= ','' ; Remove-Item $env:TEMP\\secpol.cfg -ErrorAction SilentlyContinue"
+        "secedit /export /cfg $env:TEMP\secpol.cfg /quiet | Select-String '^PasswordComplexity\s*=' $env:TEMP\secpol.cfg | ForEach-Object { ($_ -split '=')[1].Trim() }; Remove-Item $env:TEMP\secpol.cfg -ErrorAction SilentlyContinue"
     ], timeout=10)
     
     if status == "success" and output.isdigit():
@@ -227,25 +228,25 @@ def check_password_complexity() -> Dict[str, Any]:
             "remediation_hint": "Enable via Group Policy: Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy"
         }
     
-    # Fallback: Registry
+    # Fallback: net accounts (if domain-joined)
     complexity_value, fallback_status, fallback_reason = _safe_registry_read(
         r"SYSTEM\CurrentControlSet\Control\Lsa",
         "PasswordComplexity"
     )
     
-    if fallback_status == "success":
-        complexity_enabled = complexity_value == 1
-        return {
-            "control_id": "1.1.2",
-            "name": "Password Complexity",
-            "status": STATUS_COMPLIANT if complexity_enabled else STATUS_NON_COMPLIANT,
-            "severity_weight": 2,
-            "details": f"Password complexity: {'Enabled' if complexity_enabled else 'Disabled'}",
-            "reason": "Complexity requirements enforced" if complexity_enabled else "Complexity requirements not enabled",
-            "source_method_used": "registry",
-            "confidence_level": "medium",
-            "remediation_hint": "Enable via Group Policy: Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy"
-        }
+    # if fallback_status == "success":
+    #     complexity_enabled = complexity_value == 1
+    #     return {
+    #         "control_id": "1.1.2",
+    #         "name": "Password Complexity",
+    #         "status": STATUS_COMPLIANT if complexity_enabled else STATUS_NON_COMPLIANT,
+    #         "severity_weight": 2,
+    #         "details": f"Password complexity: {'Enabled' if complexity_enabled else 'Disabled'}",
+    #         "reason": "Complexity requirements enforced" if complexity_enabled else "Complexity requirements not enabled",
+    #         "source_method_used": "registry",
+    #         "confidence_level": "medium",
+    #         "remediation_hint": "Enable via Group Policy: Computer Configuration > Windows Settings > Security Settings > Account Policies > Password Policy"
+    #     }
     
     # Both methods failed
     return {
