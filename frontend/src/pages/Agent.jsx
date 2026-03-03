@@ -12,7 +12,7 @@ export default function Agent() {
             <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm dark:shadow-slate-950/20 border border-slate-200 dark:border-slate-700 p-8 hover:shadow-md transition-all">
               <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest mb-4">What does it do?</h2>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-4">
-                The IntelliPosture Agent is a high-performance, lightweight background service designed to monitor your system's security posture in real-time. It acts as the "eyes and ears" of the central analyzer.
+                The Risk Intel Agent is a high-performance, lightweight background service designed to monitor your system's security posture in real-time. It acts as the "eyes and ears" of the central analyzer.
               </p>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[

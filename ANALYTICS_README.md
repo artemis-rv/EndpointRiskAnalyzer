@@ -1,4 +1,4 @@
-# IntelliPosture Analytics Dashboard
+# Risk Intel Analytics Dashboard
 
 ## 🎯 Overview
 

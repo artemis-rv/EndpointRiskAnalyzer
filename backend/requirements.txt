@@ -1,7 +1,19 @@
+# Backend Python dependencies for Risk Intel (EndpointRiskAnalyzer)
+# Recommended: pin exact versions in production for reproducible builds.
+# Example (commented):
+# fastapi==0.95.2
+# uvicorn==0.22.0
+# pymongo==4.3.0
+# pydantic==1.10.7
+# scikit-learn==1.2.2
+# pandas==1.5.3
+# numpy==1.24.2
+
+# Core packages (unpinned here for development):
 fastapi
 uvicorn
+numpy
+pandas
 pymongo
 pydantic
 scikit-learn
-pandas
-numpy

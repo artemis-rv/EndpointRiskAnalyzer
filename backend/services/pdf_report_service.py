@@ -32,7 +32,7 @@ def generate_pdf_from_report(report_data: dict):
     styles = getSampleStyleSheet()
 
     # Title
-    elements.append(Paragraph("<b>IntelliPosture Organizational Security Posture Report</b>", styles["Title"]))
+    elements.append(Paragraph("<b>Risk Intel Organizational Security Posture Report</b>", styles["Title"]))
     elements.append(Spacer(1, 0.3 * inch))
 
     metadata = report_data.get("metadata", {})
