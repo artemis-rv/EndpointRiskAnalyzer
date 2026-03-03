@@ -11,6 +11,7 @@ import Posture from "./pages/Posture";
 import Analysis from "./pages/Analysis";
 import Guidelines from "./pages/Guidelines";
 import Contact from "./pages/Contact";
+import Login from "./pages/Login";
 import PageTransition from "./components/PageTransition";
 
 function AnimatedRoutes() {
@@ -26,6 +27,7 @@ function AnimatedRoutes() {
         <Route path="/analysis" element={<PageTransition><Analysis /></PageTransition>} />
         <Route path="/guidelines" element={<PageTransition><Guidelines /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );

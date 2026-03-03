@@ -7,7 +7,7 @@ import EndpointComparisonTable from "../components/EndpointComparisonTable";
 import PerEndpointAnalytics from "../components/PerEndpointAnalytics";
 
 /**
- * Enterprise Analytics Dashboard
+ * IntelliPosture Analytics Dashboard
  * 
  * Features:
  * - Automatic refresh after scan completion
@@ -161,7 +161,7 @@ export default function Analytics() {
             Security Posture Analytics
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base">
-            Enterprise-grade compliance dashboard with real-time endpoint risk analysis.
+            Enterprise-grade compliance dashboard for IntelliPosture with real-time endpoint health analytics.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">

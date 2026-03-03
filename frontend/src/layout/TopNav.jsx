@@ -47,9 +47,9 @@ export default function TopNav() {
     <div className="sticky top-0 z-50 flex items-center gap-6 px-6 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-soft transition-all duration-300">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-inner">
-          <span className="text-white font-bold text-sm">ER</span>
+          <span className="text-white font-bold text-sm">IP</span>
         </div>
-        <span className="font-semibold text-lg hidden sm:inline tracking-tight">Endpoint Risk</span>
+        <span className="font-semibold text-lg hidden sm:inline tracking-tight">IntelliPosture</span>
       </div>
 
       <nav className="hidden md:flex items-center gap-6">

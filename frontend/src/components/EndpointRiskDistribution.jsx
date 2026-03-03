@@ -36,7 +36,7 @@ const EndpointRiskDistribution = React.memo(({ endpoints = [] }) => {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
       <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-4">
-        Endpoint Risk Distribution
+        Endpoint Health Distribution
       </h3>
 
       <ResponsiveContainer width="100%" height={300}>

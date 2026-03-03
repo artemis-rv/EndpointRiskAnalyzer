@@ -1,4 +1,4 @@
-# Enterprise Analytics Dashboard
+# IntelliPosture Analytics Dashboard
 
 ## 🎯 Overview
 

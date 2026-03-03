@@ -46,6 +46,8 @@ def _is_agent_active(last_seen) -> bool:
     return timedelta(0) < delta < timedelta(minutes=ACTIVE_AGENT_THRESHOLD_MINUTES)
 
 
+
+# primary path with trailing slash (FastAPI will redirect from no-slash by default)
 @router.get("/")
 def list_endpoints():
     """
@@ -78,6 +80,13 @@ def list_endpoints():
         "total_endpoints": len(results),
         "endpoints": results
     }
+
+
+# provide an alias without the trailing slash to avoid automatic 307 redirects
+@router.get("", include_in_schema=False)
+def list_endpoints_no_slash():
+    # simply forward to the normal handler
+    return list_endpoints()
 
 
 from bson import ObjectId

@@ -9,6 +9,7 @@ from backend.api_auth import verify_api_key
 router = APIRouter(prefix="/api/agent", tags=["Agent Jobs"])
 
 
+# primary job-polling endpoint (no trailing slash helps client form URLs cleanly)
 @router.get("/jobs/{endpoint_id}")
 @limiter.limit("3/minute")  # Max 3 requests per minute (prevents race condition with 30s polling)
 def get_pending_job(request: Request, endpoint_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
@@ -51,6 +52,14 @@ def get_pending_job(request: Request, endpoint_id: str, auth_endpoint_id: str = 
     }
 
 
+# alias to accept a trailing slash without forcing a redirect
+@router.get("/jobs/{endpoint_id}/", include_in_schema=False)
+@limiter.limit("3/minute")
+def get_pending_job_slash(request: Request, endpoint_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
+    # simply forward to main handler
+    return get_pending_job(request, endpoint_id, auth_endpoint_id)
+
+
 
 
 @router.post("/jobs/{job_id}/complete")
@@ -77,6 +86,11 @@ def mark_job_complete(job_id: str, auth_endpoint_id: str = Depends(verify_api_ke
     )
 
     return {"status": "completed"}
+
+
+@router.post("/jobs/{job_id}/complete/", include_in_schema=False)
+def mark_job_complete_slash(job_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
+    return mark_job_complete(job_id, auth_endpoint_id)
 
 
 @router.post("/jobs/cleanup-expired")

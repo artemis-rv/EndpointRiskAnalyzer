@@ -23,8 +23,8 @@ export default function Dashboard() {
   const liveSummary = posture?.live_summary;
 
   useEffect(() => {
-    const loadEndpoints = () => {
-      setLoadingEndpoints(true);
+    const loadEndpoints = (isInitial = false) => {
+      if (isInitial) setLoadingEndpoints(true);
       return getEndpoints()
         .then((data) => {
           setEndpoints(data.endpoints || []);
@@ -33,10 +33,12 @@ export default function Dashboard() {
           console.error("Failed to fetch endpoints", err);
           setEndpoints([]);
         })
-        .finally(() => setLoadingEndpoints(false));
+        .finally(() => {
+          if (isInitial) setLoadingEndpoints(false);
+        });
     };
-    loadEndpoints();
-    const interval = setInterval(loadEndpoints, 15000);
+    loadEndpoints(true);
+    const interval = setInterval(() => loadEndpoints(false), 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -207,8 +209,8 @@ export default function Dashboard() {
                 {totalEndpoints === 0
                   ? "No endpoints registered yet."
                   : totalEndpoints <= 5
-                  ? `Showing all ${totalEndpoints} endpoint${totalEndpoints === 1 ? '' : 's'}`
-                  : `Showing top 5 active of ${totalEndpoints}`}
+                    ? `Showing all ${totalEndpoints} endpoint${totalEndpoints === 1 ? '' : 's'}`
+                    : `Showing top 5 active of ${totalEndpoints}`}
               </p>
             </div>
           </div>
@@ -224,194 +226,194 @@ export default function Dashboard() {
             ) : (
               displayedEndpoints.map((ep) => (
                 <div key={ep.endpoint_id}>
-                {/* Endpoint Row */}
-                <div className="p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">
-                      {ep.hostname || "Unnamed Endpoint"}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      {ep.os || "Unknown OS"} • Scans: {ep.scan_count ?? 0}
-                    </p>
+                  {/* Endpoint Row */}
+                  <div className="p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white">
+                        {ep.hostname || "Unnamed Endpoint"}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {ep.os || "Unknown OS"} • Scans: {ep.scan_count ?? 0}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => toggleEndpointScans(ep.endpoint_id)}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedEndpoint === ep.endpoint_id
+                        ? "bg-slate-100 dark:bg-slate-700 text-indigo-600 dark:text-white border border-slate-200 dark:border-slate-600"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                        }`}
+                    >
+                      {selectedEndpoint === ep.endpoint_id ? "Hide Details" : "Scan History"}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => toggleEndpointScans(ep.endpoint_id)}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedEndpoint === ep.endpoint_id
-                      ? "bg-slate-100 dark:bg-slate-700 text-indigo-600 dark:text-white border border-slate-200 dark:border-slate-600"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
-                      }`}
-                  >
-                    {selectedEndpoint === ep.endpoint_id ? "Hide Details" : "Scan History"}
-                  </button>
-                </div>
 
-                {/* Scan History Dropdown */}
-                {selectedEndpoint === ep.endpoint_id && (
-                  <div className="px-5 pb-5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
-                    <div className="pt-4">
-                      {loadingScans[ep.endpoint_id] && (
-                        <div className="flex items-center gap-3 text-slate-400 animate-pulse">
-                          <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin"></div>
-                          <span className="text-xs font-medium">Fetching history...</span>
-                        </div>
-                      )}
+                  {/* Scan History Dropdown */}
+                  {selectedEndpoint === ep.endpoint_id && (
+                    <div className="px-5 pb-5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
+                      <div className="pt-4">
+                        {loadingScans[ep.endpoint_id] && (
+                          <div className="flex items-center gap-3 text-slate-400 animate-pulse">
+                            <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin"></div>
+                            <span className="text-xs font-medium">Fetching history...</span>
+                          </div>
+                        )}
 
-                      {!loadingScans[ep.endpoint_id] && scans[ep.endpoint_id]?.length === 0 && (
-                        <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
-                          No scan logs recorded for this endpoint.
-                        </p>
-                      )}
+                        {!loadingScans[ep.endpoint_id] && scans[ep.endpoint_id]?.length === 0 && (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2">
+                            No scan logs recorded for this endpoint.
+                          </p>
+                        )}
 
-                      {!loadingScans[ep.endpoint_id] && scans[ep.endpoint_id]?.length > 0 && (
-                        <div className="space-y-3">
-                          {scans[ep.endpoint_id].map((scan, idx) => {
-                            const scanKey = `${ep.endpoint_id}-${idx}`;
-                            const isExpanded = expandedScan[scanKey];
+                        {!loadingScans[ep.endpoint_id] && scans[ep.endpoint_id]?.length > 0 && (
+                          <div className="space-y-3">
+                            {scans[ep.endpoint_id].map((scan, idx) => {
+                              const scanKey = `${ep.endpoint_id}-${idx}`;
+                              const isExpanded = expandedScan[scanKey];
 
-                            // Prefer ML Assessment if available
-                            const mlRisk = scan.ml_assessment;
-                            const legacyRisk = scan.scan_data?.risk_assessment;
+                              // Prefer ML Assessment if available
+                              const mlRisk = scan.ml_assessment;
+                              const legacyRisk = scan.scan_data?.risk_assessment;
 
-                            const riskLevel = mlRisk?.risk || legacyRisk?.risk_level || "N/A";
-                            const riskFlags = legacyRisk?.risk_flags || []; // ML flags might be different, let's keep legacy flags for now or merge?
-                            // ML Details are in mlRisk.details or mlRisk.breakdown
+                              const riskLevel = mlRisk?.risk || legacyRisk?.risk_level || "N/A";
+                              const riskFlags = legacyRisk?.risk_flags || []; // ML flags might be different, let's keep legacy flags for now or merge?
+                              // ML Details are in mlRisk.details or mlRisk.breakdown
 
-                            const openPorts = scan.scan_data?.exposure_posture?.open_ports || [];
+                              const openPorts = scan.scan_data?.exposure_posture?.open_ports || [];
 
-                            return (
-                              <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
-                                <button
-                                  onClick={() => toggleScanDetail(ep.endpoint_id, idx)}
-                                  className="w-full p-4 flex items-center justify-between text-left transition-colors"
-                                >
-                                  <div className="flex flex-wrap items-center gap-3">
-                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                                      {formatDateTimeIST(scan.scan_time)}
-                                    </span>
-                                    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-black uppercase tracking-tight ${getRiskColor(riskLevel)}`}>
-                                      {riskLevel}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
-                                      {openPorts.length} PORTS
-                                    </span>
-                                  </div>
-                                  <svg
-                                    className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
+                              return (
+                                <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+                                  <button
+                                    onClick={() => toggleScanDetail(ep.endpoint_id, idx)}
+                                    className="w-full p-4 flex items-center justify-between text-left transition-colors"
                                   >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </button>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                        {formatDateTimeIST(scan.scan_time)}
+                                      </span>
+                                      <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-black uppercase tracking-tight ${getRiskColor(riskLevel)}`}>
+                                        {riskLevel}
+                                      </span>
+                                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
+                                        {openPorts.length} PORTS
+                                      </span>
+                                    </div>
+                                    <svg
+                                      className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </button>
 
-                                {isExpanded && (
-                                  <div className="p-4 pt-0 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                      {/* Issues/Flags */}
-                                      <div>
-                                        <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Findings</h5>
-                                        {(() => {
-                                          // Extract CIS non-compliant controls
-                                          const cisControls = scan.scan_data?.cis_compliance?.controls || [];
-                                          const nonCompliantCIS = cisControls.filter(c =>
-                                            c.status === "non_compliant" || c.status === "non-compliant"
-                                          );
-
-                                          // Combine risk flags and CIS findings
-                                          const allFindings = [
-                                            ...riskFlags.map(flag => ({ type: 'risk_flag', content: flag, priority: 999 })), // Risk flags first
-                                            ...nonCompliantCIS.map(c => ({
-                                              type: 'cis',
-                                              control_id: c.control_id,
-                                              name: c.name,
-                                              severity_weight: c.severity_weight,
-                                              details: c.details,
-                                              priority: c.severity_weight // 3 = Critical, 2 = High, 1 = Low
-                                            }))
-                                          ];
-
-                                          // Sort by priority (highest first): Risk flags → Critical → High → Low
-                                          allFindings.sort((a, b) => b.priority - a.priority);
-
-                                          if (allFindings.length === 0) {
-                                            return (
-                                              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No anomalies detected.</p>
+                                  {isExpanded && (
+                                    <div className="p-4 pt-0 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                        {/* Issues/Flags */}
+                                        <div>
+                                          <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Findings</h5>
+                                          {(() => {
+                                            // Extract CIS non-compliant controls
+                                            const cisControls = scan.scan_data?.cis_compliance?.controls || [];
+                                            const nonCompliantCIS = cisControls.filter(c =>
+                                              c.status === "non_compliant" || c.status === "non-compliant"
                                             );
-                                          }
 
-                                          return (
-                                            <ul className="space-y-1.5">
-                                              {allFindings.map((finding, findingIdx) => {
-                                                if (finding.type === 'risk_flag') {
+                                            // Combine risk flags and CIS findings
+                                            const allFindings = [
+                                              ...riskFlags.map(flag => ({ type: 'risk_flag', content: flag, priority: 999 })), // Risk flags first
+                                              ...nonCompliantCIS.map(c => ({
+                                                type: 'cis',
+                                                control_id: c.control_id,
+                                                name: c.name,
+                                                severity_weight: c.severity_weight,
+                                                details: c.details,
+                                                priority: c.severity_weight // 3 = Critical, 2 = High, 1 = Low
+                                              }))
+                                            ];
+
+                                            // Sort by priority (highest first): Risk flags → Critical → High → Low
+                                            allFindings.sort((a, b) => b.priority - a.priority);
+
+                                            if (allFindings.length === 0) {
+                                              return (
+                                                <p className="text-xs text-slate-400 dark:text-slate-500 italic">No anomalies detected.</p>
+                                              );
+                                            }
+
+                                            return (
+                                              <ul className="space-y-1.5">
+                                                {allFindings.map((finding, findingIdx) => {
+                                                  if (finding.type === 'risk_flag') {
+                                                    return (
+                                                      <li key={`risk-${findingIdx}`} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                        <span className="text-red-500 font-bold shrink-0">!</span>
+                                                        <span className="text-[11px] text-slate-700 dark:text-slate-300 leading-tight">{finding.content}</span>
+                                                      </li>
+                                                    );
+                                                  }
+
+                                                  // CIS finding
+                                                  const severityColor = finding.severity_weight === 3
+                                                    ? "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                                                    : finding.severity_weight === 2
+                                                      ? "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800"
+                                                      : "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800";
+
                                                   return (
-                                                    <li key={`risk-${findingIdx}`} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                                                      <span className="text-red-500 font-bold shrink-0">!</span>
-                                                      <span className="text-[11px] text-slate-700 dark:text-slate-300 leading-tight">{finding.content}</span>
+                                                    <li key={`cis-${findingIdx}`} className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tight ${severityColor}`}>
+                                                          CIS {finding.control_id}
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold">{finding.name}</span>
+                                                      </div>
+                                                      <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight pl-1">{finding.details}</span>
                                                     </li>
                                                   );
-                                                }
+                                                })}
+                                              </ul>
+                                            );
+                                          })()}
+                                        </div>
 
-                                                // CIS finding
-                                                const severityColor = finding.severity_weight === 3
-                                                  ? "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
-                                                  : finding.severity_weight === 2
-                                                    ? "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800"
-                                                    : "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800";
-
-                                                return (
-                                                  <li key={`cis-${findingIdx}`} className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                                                    <div className="flex items-center gap-2">
-                                                      <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-tight ${severityColor}`}>
-                                                        CIS {finding.control_id}
-                                                      </span>
-                                                      <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold">{finding.name}</span>
-                                                    </div>
-                                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight pl-1">{finding.details}</span>
-                                                  </li>
-                                                );
-                                              })}
-                                            </ul>
-                                          );
-                                        })()}
-                                      </div>
-
-                                      {/* Risk Breakdown Section */}
-                                      <div>
-                                        <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Potential Risks</h5>
-                                        <div className="space-y-1.5">
-                                          {/* Show only factor names, no individual scores */}
-                                          {(mlRisk?.breakdown || legacyRisk?.breakdown || []).map((item, bIdx) => (
-                                            <div key={bIdx} className="flex items-center text-[10px] p-2 bg-slate-50 dark:bg-slate-900 rounded border border-slate-100 dark:border-slate-700">
-                                              <span className="text-slate-600 dark:text-slate-400 font-medium">{item[0]}</span>
+                                        {/* Risk Breakdown Section */}
+                                        <div>
+                                          <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">Potential Risks</h5>
+                                          <div className="space-y-1.5">
+                                            {/* Show only factor names, no individual scores */}
+                                            {(mlRisk?.breakdown || legacyRisk?.breakdown || []).map((item, bIdx) => (
+                                              <div key={bIdx} className="flex items-center text-[10px] p-2 bg-slate-50 dark:bg-slate-900 rounded border border-slate-100 dark:border-slate-700">
+                                                <span className="text-slate-600 dark:text-slate-400 font-medium">{item[0]}</span>
+                                              </div>
+                                            ))}
+                                            {/* Keep only final Anomaly Score */}
+                                            <div className="flex justify-between items-center bg-slate-900 dark:bg-primary-600 text-white p-2.5 rounded-lg shadow-md mt-4">
+                                              <span className="text-[10px] font-black uppercase tracking-tight">
+                                                {mlRisk ? "Anomaly Score" : "Consolidated Risk Score"}
+                                              </span>
+                                              <span className="text-sm font-black">
+                                                {mlRisk ? mlRisk.anomaly_score?.toFixed(4) : legacyRisk?.risk_score}
+                                              </span>
                                             </div>
-                                          ))}
-                                          {/* Keep only final Anomaly Score */}
-                                          <div className="flex justify-between items-center bg-slate-900 dark:bg-primary-600 text-white p-2.5 rounded-lg shadow-md mt-4">
-                                            <span className="text-[10px] font-black uppercase tracking-tight">
-                                              {mlRisk ? "Anomaly Score" : "Consolidated Risk Score"}
-                                            </span>
-                                            <span className="text-sm font-black">
-                                              {mlRisk ? mlRisk.anomaly_score?.toFixed(4) : legacyRisk?.risk_score}
-                                            </span>
                                           </div>
                                         </div>
                                       </div>
-                                    </div>
 
-                                    {/* Risky Ports Check - Removed per user request */}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                                      {/* Risky Ports Check - Removed per user request */}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )))}
+                  )}
+                </div>
+              )))}
             {!loadingEndpoints && totalEndpoints > 5 && (
               <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-center bg-slate-50/50 dark:bg-slate-900/50 rounded-b-2xl">
                 <button

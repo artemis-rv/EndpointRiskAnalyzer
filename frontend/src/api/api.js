@@ -3,7 +3,9 @@
 const BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 export async function getEndpoints() {
-  const res = await fetch(`${BASE_URL}/api/endpoints`);
+  // always include trailing slash to avoid FastAPI 307 redirect that trips up
+  // the CRA proxy in development (redirect caused full-page refreshes)
+  const res = await fetch(`${BASE_URL}/api/endpoints/`);
   return res.json();
 }
 

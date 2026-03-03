@@ -54,3 +54,9 @@ def agent_heartbeat(endpoint_id: str, auth_endpoint_id: str = Depends(verify_api
     )
 
     return {"status": "alive"}
+
+
+# alias route accepting optional trailing slash
+@router.post("/heartbeat/{endpoint_id}/", include_in_schema=False)
+def agent_heartbeat_slash(endpoint_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
+    return agent_heartbeat(endpoint_id, auth_endpoint_id)

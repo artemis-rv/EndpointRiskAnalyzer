@@ -50,7 +50,8 @@ class TerminalSpinner:
         self.message = message
         self.total = total
         self._stop = False
-        self._idx = 0
+        self._frame = 0
+        self._progress = 0
         self._thread: threading.Thread | None = None
 
     def start(self):
@@ -65,18 +66,19 @@ class TerminalSpinner:
         while not self._stop:
             pct = ""
             if self.total:
-                pct_num = int(self._idx * 100 / self.total) if self.total else 0
-                pct = f" {self._idx}/{self.total} ({pct_num}%)"
-            sys.stdout.write(f"\r{self.message} {symbols[self._idx % len(symbols)]}{pct}")
+                display_progress = min(self._progress, self.total)
+                pct_num = int(display_progress * 100 / self.total) if self.total else 0
+                pct = f" {display_progress}/{self.total} ({pct_num}%)"
+            sys.stdout.write(f"\r{self.message} {symbols[self._frame % len(symbols)]}{pct}")
             sys.stdout.flush()
             time.sleep(0.1)
-            self._idx += 1
+            self._frame += 1
         # clear line when done
         sys.stdout.write("\r" + " " * (len(self.message) + 30) + "\r")
         sys.stdout.flush()
 
     def advance(self, step: int = 1):
-        self._idx += step
+        self._progress += step
 
     def stop(self):
         if not sys.stdout.isatty():
@@ -1182,17 +1184,14 @@ def collect_cis_compliance() -> Dict[str, Any]:
     # encryption
     tasks.append((check_bitlocker_enabled, ()))
 
-    # We estimate count of controls ahead of execution so the spinner can show
-    # percentage.  `check_antivirus_compliance` returns 3–4 items depending on
-    # definition-status; use 4 as a safe upper bound so progress never exceeds
-    # 100%.
-    antivirus_estimate = 4
-    total = len(tasks) - 1 + antivirus_estimate
+    # Calculate exact total of controls expected
+    # All tasks return 1 control except check_antivirus_compliance which returns exactly 3
+    total = len(tasks) - 1 + 3
 
-    spinner = TerminalSpinner("Scanning CIS Controls…", total=total)
+    print("Starting cis compliance assessment")
+    
+    spinner = TerminalSpinner("Scanning CIS controls...", total=total)
     spinner.start()
-
-    logger.info("Starting CIS compliance assessment...")
 
     # execute tasks sequentially
     for func, args in tasks:
@@ -1201,7 +1200,9 @@ def collect_cis_compliance() -> Dict[str, Any]:
         except Exception as e:
             # safeguard against a single check failing
             logger.exception(f"Error running {func.__name__}: {e}")
+            spinner.advance(3 if func == check_antivirus_compliance else 1)
             continue
+            
         if isinstance(result, list):
             # antivirus compliance returns list of controls
             for r in result:
