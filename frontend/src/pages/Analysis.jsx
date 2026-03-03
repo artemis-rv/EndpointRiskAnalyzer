@@ -12,6 +12,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import Card from "../components/Card";
+import { getAnalytics } from "../api/api";
 
 export default function Analysis() {
     const [data, setData] = useState(null);
@@ -27,9 +28,7 @@ export default function Analysis() {
 
     const fetchData = async () => {
         try {
-            // Get base URL dynamically or fallback to localhost
-            const baseUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-            const res = await fetch(`${baseUrl}/api/analytics/`);
+            const res = await getAnalytics();
             if (!res.ok) throw new Error("Failed to fetch analytics data");
             const json = await res.json();
             setData(json);

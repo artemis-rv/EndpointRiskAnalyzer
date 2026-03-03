@@ -1,7 +1,6 @@
 // only 1 update to do instead of all files
 
-const BASE_URL = "http://127.0.0.1:8000";
-
+const BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 export async function getEndpoints() {
   const res = await fetch(`${BASE_URL}/api/endpoints`);
@@ -10,6 +9,11 @@ export async function getEndpoints() {
 
 export async function getScans(endpointId) {
   const res = await fetch(`${BASE_URL}/api/scans/${endpointId}`);
+  return res.json();
+}
+
+export async function getEndpoint(endpointId) {
+  const res = await fetch(`${BASE_URL}/api/endpoints/${endpointId}`);
   return res.json();
 }
 
@@ -85,3 +89,18 @@ export async function downloadOrganizationReportPDF() {
   return response.blob();
 }
 
+export async function getAnalytics() {
+  const res = await fetch(`${BASE_URL}/api/analytics/`);
+  return res;
+}
+
+export async function sendContactMessage(formData) {
+  const res = await fetch(`${BASE_URL}/api/contact/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+  });
+  return res;
+}

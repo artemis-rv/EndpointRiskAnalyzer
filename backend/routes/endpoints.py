@@ -19,6 +19,7 @@ from backend.db.mongo import (
     endpoints_collection,
     endpoint_scans_collection
 )
+from backend.services.endpoint_service import is_agent_active
 
 router = APIRouter(prefix="/api/endpoints", tags=["Endpoints"])
 
@@ -61,7 +62,7 @@ def list_endpoints():
         eid = ep.get("endpoint_id") or ep["_id"]
         scan_count = endpoint_scans_collection().count_documents({"endpoint_id": eid})
         last_seen = ep.get("last_seen")
-        agent_active = _is_agent_active(last_seen)
+        agent_active = is_agent_active(last_seen)
         endpoint_id = ep.get("endpoint_id") or ep["_id"]
 
         results.append({
@@ -111,7 +112,7 @@ def get_endpoint_detail(endpoint_id: str):
                 "hostname": endpoint.get("hostname"),
                 "os": endpoint.get("os"),
                 "last_seen": endpoint.get("last_seen"),
-                "agent_active": _is_agent_active(endpoint.get("last_seen"))
+                "agent_active": is_agent_active(endpoint.get("last_seen"))
             },
             "latest_scan": None
         }
@@ -136,7 +137,7 @@ def get_endpoint_detail(endpoint_id: str):
             "hostname": endpoint.get("hostname"),
             "os": endpoint.get("os"),
             "last_seen": endpoint.get("last_seen"),
-            "agent_active": _is_agent_active(endpoint.get("last_seen"))
+            "agent_active": is_agent_active(endpoint.get("last_seen"))
         },
         "latest_scan": {
             "scan_time": latest_scan.get("scan_time"),

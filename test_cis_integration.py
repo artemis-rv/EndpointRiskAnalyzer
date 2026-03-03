@@ -9,6 +9,9 @@ import sys
 import os
 import json
 
+# Ensure any terminal animations skip during automated tests
+sys.stdout.isatty = lambda: False
+
 # Add paths
 project_root = os.path.dirname(os.path.abspath(__file__))
 agent_path = os.path.join(project_root, 'agent')

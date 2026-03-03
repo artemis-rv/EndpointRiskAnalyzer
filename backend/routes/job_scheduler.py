@@ -4,6 +4,7 @@ import uuid
 import logging
 
 from backend.db.mongo import agent_jobs_collection, endpoints_collection
+from backend.services.endpoint_service import is_agent_active
 
 router = APIRouter(prefix="/api/jobs", tags=["Job Scheduler"])
 logger = logging.getLogger(__name__)
@@ -40,23 +41,9 @@ def list_jobs():
             ep = endpoints_collection().find_one({"endpoint_id": str(eid)})
             if ep:
                 hostname = ep.get("hostname", "—")
-                # Calculate active status (threshold 60 seconds = 2x polling interval)
                 last_seen = ep.get("last_seen")
                 if last_seen:
-                    try:
-                        if isinstance(last_seen, str):
-                           last_seen = datetime.fromisoformat(last_seen.replace("Z", "+00:00"))
-                        if last_seen.tzinfo is None:
-                            last_seen = last_seen.replace(tzinfo=timezone.utc)
-                        
-                        now = datetime.now(timezone.utc)
-                        delta = now - last_seen
-                        # Active if seen within last 60 seconds (2x heartbeat interval)
-                        if timedelta(0) < delta < timedelta(seconds=60):
-                            agent_active = True
-                    except Exception:
-                        pass
-
+                    agent_active = is_agent_active(last_seen, threshold_seconds=60)
         out.append({
             "job_id": j.get("job_id"),
             "endpoint_id": str(eid or ""),
@@ -97,24 +84,7 @@ def schedule_scan_all():
             continue
             
         # Determine initial status based on agent activity
-        status = "pending"
-        try:
-            last_seen = ep.get("last_seen")
-            if last_seen:
-                if isinstance(last_seen, str):
-                    last_seen = datetime.fromisoformat(last_seen.replace("Z", "+00:00"))
-                if last_seen.tzinfo is None:
-                    last_seen = last_seen.replace(tzinfo=timezone.utc)
-                
-                delta = now - last_seen
-                # Active only if seen within last 60 seconds (2x polling interval)
-                if not (timedelta(0) < delta < timedelta(seconds=60)):
-                    status = "disconnected"
-            else:
-                status = "disconnected"
-        except Exception:
-            status = "disconnected"
-
+        status = "pending" if is_agent_active(ep.get("last_seen"), threshold_seconds=60) else "disconnected"
         # Check if there is already a pending job for this endpoint to avoid duplicates
         # We only check for PENDING jobs. If there is a "disconnected" job, we might want to schedule a new one?
         # Actually, let's just avoid duplicates for any non-completed, non-expired job to keep it clean.

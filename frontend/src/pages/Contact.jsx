@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Card from '../components/Card';
-
+import { sendContactMessage } from '../api/api';
 export default function Contact() {
     const [status, setStatus] = useState('idle');
     const [formData, setFormData] = useState({
@@ -8,9 +8,6 @@ export default function Contact() {
         email: '',
         message: ''
     });
-
-    const staticEmail = "support@organizational-security.com";
-    const mailtoSubject = encodeURIComponent("Security Posture Inquiry");
 
     const handleChange = (e) => {
         setFormData({
@@ -24,14 +21,7 @@ export default function Contact() {
         setStatus('submitting');
 
         try {
-            const baseUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-            const response = await fetch(`${baseUrl}/api/contact/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+            const response = await sendContactMessage(formData);
 
             if (response.ok) {
                 setStatus('success');

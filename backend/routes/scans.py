@@ -18,10 +18,8 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from datetime import datetime, timezone
 import logging
 
-from backend.db.mongo import (
-    endpoints_collection,
-    endpoint_scans_collection
-)
+from backend.db.mongo import endpoint_scans_collection
+from backend.services.endpoint_service import upsert_endpoint
 from backend.limiter import limiter
 from backend.api_auth import verify_api_key
 
@@ -62,62 +60,24 @@ def upload_scan(request: Request, scan: dict, auth_endpoint_id: str = Depends(ve
             logger.warning(f"Scan rejected: token endpoint_id={auth_endpoint_id} does not match payload endpoint_id={agent_endpoint_id}")
             raise HTTPException(status_code=403, detail="Forbidden: Token does not match endpoint_id")
 
-
-        # Prefer agent's endpoint_id (UUID); else match by hostname for backward compatibility
-        if agent_endpoint_id:
-            endpoint = endpoints_collection().find_one({"endpoint_id": agent_endpoint_id})
-            if not endpoint:
-                endpoints_collection().insert_one({
-                    "endpoint_id": agent_endpoint_id,
-                    "hostname": hostname,
-                    "os": os_name,
-                    "last_seen": datetime.now(timezone.utc),
-                })
-                endpoint = endpoints_collection().find_one({"endpoint_id": agent_endpoint_id})
-            else:
-                endpoints_collection().update_one(
-                    {"endpoint_id": agent_endpoint_id},
-                    {"$set": {"last_seen": datetime.now(timezone.utc), "hostname": hostname, "os": os_name}}
-                )
-            # Store scan by string endpoint_id so we can query by UUID
-            scan_record = {
-                "endpoint_id": agent_endpoint_id,
-                "scan_time": datetime.now(timezone.utc),
-                "scan_data": scan
-            }
-        else:
-            endpoint = endpoints_collection().find_one({"hostname": hostname})
-            if not endpoint:
-                endpoint = {
-                    "hostname": hostname,
-                    "os": os_name,
-                    "last_seen": datetime.now(timezone.utc)
-                }
-                endpoint_id_oid = endpoints_collection().insert_one(endpoint).inserted_id
-            else:
-                endpoint_id_oid = endpoint["_id"]
-                endpoints_collection().update_one(
-                    {"_id": endpoint_id_oid},
-                    {"$set": {"last_seen": datetime.now(timezone.utc)}}
-                )
-            scan_record = {
-                "endpoint_id": endpoint_id_oid,
-                "scan_time": datetime.now(timezone.utc),
-                "scan_data": scan
-            }
-
+        endpoint_id = upsert_endpoint(hostname, os_name, agent_endpoint_id)
+        
+        scan_record = {
+            "endpoint_id": endpoint_id,
+            "scan_time": datetime.now(timezone.utc),
+            "scan_data": scan
+        }
         result = endpoint_scans_collection().insert_one(scan_record)
         
         if result.inserted_id:
-            logger.info(f"Successfully stored scan for endpoint {agent_endpoint_id or endpoint_id_oid}")
+            logger.info(f"Successfully stored scan for endpoint {endpoint_id}")
         else:
-            logger.error(f"Failed to store scan for endpoint {agent_endpoint_id or endpoint_id_oid}: No inserted_id")
+            logger.error(f"Failed to store scan for endpoint {endpoint_id}: No inserted_id")
             raise Exception("Scan storage failed: No inserted_id returned")
 
         return {
             "status": "success",
-            "message": "Scan stored successfully",
-            "endpoint_id": agent_endpoint_id or str(endpoint.get("_id", ""))
+            "endpoint_id": str(endpoint_id)
         }
 
     except HTTPException:

@@ -23,6 +23,9 @@ import subprocess
 from typing import Dict, List, Any, Tuple
 import logging
 import re
+import sys
+import threading
+import time
 
 # Import existing checks to avoid duplication
 from day1 import get_firewall_status, get_antivirus_posture
@@ -31,6 +34,57 @@ from day7_exposure import is_rdp_enabled, is_smbv1_enabled
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Terminal Spinner Helper
+# =============================================================================
+
+class TerminalSpinner:
+    """Simple animated spinner for command‑line progress indication.
+
+    Only runs when stdout is a TTY, and otherwise is a no-op so that
+    automated tests and non-interactive environments remain unaffected.
+    """
+    def __init__(self, message: str = "", total: int | None = None):
+        self.message = message
+        self.total = total
+        self._stop = False
+        self._idx = 0
+        self._thread: threading.Thread | None = None
+
+    def start(self):
+        if not sys.stdout.isatty():
+            return
+        self._stop = False
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def _run(self):
+        symbols = "|/-\\"
+        while not self._stop:
+            pct = ""
+            if self.total:
+                pct_num = int(self._idx * 100 / self.total) if self.total else 0
+                pct = f" {self._idx}/{self.total} ({pct_num}%)"
+            sys.stdout.write(f"\r{self.message} {symbols[self._idx % len(symbols)]}{pct}")
+            sys.stdout.flush()
+            time.sleep(0.1)
+            self._idx += 1
+        # clear line when done
+        sys.stdout.write("\r" + " " * (len(self.message) + 30) + "\r")
+        sys.stdout.flush()
+
+    def advance(self, step: int = 1):
+        self._idx += step
+
+    def stop(self):
+        if not sys.stdout.isatty():
+            return
+        self._stop = True
+        if self._thread:
+            self._thread.join()
+        self._thread = None
 
 
 # =============================================================================
@@ -1079,51 +1133,93 @@ def collect_cis_compliance() -> Dict[str, Any]:
     Returns:
         Dictionary with controls, compliance_score, and priority_focus
     """
-    controls = []
-    
-    logger.info("Starting CIS compliance assessment...")
-    
-    # ===== Account Policies =====
-    controls.append(check_minimum_password_length())
-    controls.append(check_password_complexity())
-    controls.append(check_account_lockout_threshold())
-    controls.append(check_guest_account_disabled())
-    
-    # ===== Firewall ===== (reuse existing data)
+    controls: List[Dict[str, Any]] = []
+
+    # build a list of (callable, args tuple) to allow iteration/progress
+    tasks: List[Tuple] = []
+
+    # account policies
+    tasks.extend([
+        (check_minimum_password_length, ()),
+        (check_password_complexity, ()),
+        (check_account_lockout_threshold, ()),
+        (check_guest_account_disabled, ()),
+    ])
+
+    # firewall (reuse existing data)
     firewall_data = get_firewall_status()
-    controls.append(check_firewall_compliance(firewall_data))
-    controls.append(check_firewall_inbound_blocking())
-    
-    # ===== Network Security ===== (reuse existing data)
+    tasks.extend([
+        (check_firewall_compliance, (firewall_data,)),
+        (check_firewall_inbound_blocking, ()),
+    ])
+
+    # network security
     smbv1_status = is_smbv1_enabled()
-    controls.append(check_smbv1_disabled(smbv1_status))
-    controls.append(check_llmnr_disabled())
-    
-    # ===== Remote Access ===== (reuse existing data)
+    tasks.extend([
+        (check_smbv1_disabled, (smbv1_status,)),
+        (check_llmnr_disabled, ()),
+    ])
+
+    # remote access
     rdp_status = is_rdp_enabled()
-    controls.append(check_rdp_compliance(rdp_status))
-    controls.append(check_nla_enabled())
-    
-    # ===== Antivirus ===== (reuse existing data)
+    tasks.extend([
+        (check_rdp_compliance, (rdp_status,)),
+        (check_nla_enabled, ()),
+    ])
+
+    # antivirus
     av_posture = get_antivirus_posture()
-    controls.extend(check_antivirus_compliance(av_posture))
-    
-    # ===== Audit Policies =====
-    controls.append(check_security_audit_logging())
-    controls.append(check_event_log_size())
-    controls.append(check_log_retention())
-    
-    # ===== Encryption =====
-    controls.append(check_bitlocker_enabled())
-    
+    # note: check_antivirus_compliance returns a list already
+    tasks.append((check_antivirus_compliance, (av_posture,)))
+
+    # audit policies
+    tasks.extend([
+        (check_security_audit_logging, ()),
+        (check_event_log_size, ()),
+        (check_log_retention, ()),
+    ])
+
+    # encryption
+    tasks.append((check_bitlocker_enabled, ()))
+
+    # We estimate count of controls ahead of execution so the spinner can show
+    # percentage.  `check_antivirus_compliance` returns 3–4 items depending on
+    # definition-status; use 4 as a safe upper bound so progress never exceeds
+    # 100%.
+    antivirus_estimate = 4
+    total = len(tasks) - 1 + antivirus_estimate
+
+    spinner = TerminalSpinner("Scanning CIS Controls…", total=total)
+    spinner.start()
+
+    logger.info("Starting CIS compliance assessment...")
+
+    # execute tasks sequentially
+    for func, args in tasks:
+        try:
+            result = func(*args)
+        except Exception as e:
+            # safeguard against a single check failing
+            logger.exception(f"Error running {func.__name__}: {e}")
+            continue
+        if isinstance(result, list):
+            # antivirus compliance returns list of controls
+            for r in result:
+                controls.append(r)
+                spinner.advance()
+        else:
+            controls.append(result)
+            spinner.advance()
+
+    spinner.stop()
     logger.info(f"CIS compliance assessment complete: {len(controls)} controls checked")
-    
+
     # Calculate final score
     compliance_score = calculate_weighted_score(controls)
-    
+
     # Calculate top 3 priority actions
     priority_focus = calculate_priority_controls(controls, top_n=3)
-    
+
     return {
         "controls": controls,
         "compliance_score": compliance_score,

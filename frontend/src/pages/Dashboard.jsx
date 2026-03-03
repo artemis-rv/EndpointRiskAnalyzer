@@ -11,6 +11,7 @@ import { formatDateTimeIST } from "../utils/dateUtils";
 
 export default function Dashboard() {
   const [endpoints, setEndpoints] = useState([]);
+  const [loadingEndpoints, setLoadingEndpoints] = useState(true);
   const [posture, setPosture] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
@@ -22,8 +23,18 @@ export default function Dashboard() {
   const liveSummary = posture?.live_summary;
 
   useEffect(() => {
-    const loadEndpoints = () =>
-      getEndpoints().then((data) => setEndpoints(data.endpoints || []));
+    const loadEndpoints = () => {
+      setLoadingEndpoints(true);
+      return getEndpoints()
+        .then((data) => {
+          setEndpoints(data.endpoints || []);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch endpoints", err);
+          setEndpoints([]);
+        })
+        .finally(() => setLoadingEndpoints(false));
+    };
     loadEndpoints();
     const interval = setInterval(loadEndpoints, 15000);
     return () => clearInterval(interval);
@@ -51,6 +62,8 @@ export default function Dashboard() {
   const handleTriggerAnalysis = async () => {
     try {
       await triggerAnalysis();
+      // Emit event so Analytics page auto-refreshes
+      window.dispatchEvent(new CustomEvent("scanCompleted"));
       // Refresh interpretation after a short delay
       setTimeout(() => {
         getLatestInterpretation().then((data) => {
@@ -74,6 +87,18 @@ export default function Dashboard() {
     posture?.last_scan_at ||
     posture?.created_at ||
     interpretation?.generated_at;
+
+  // sort endpoints so active ones and most recently seen appear first
+  const sortedEndpoints = [...endpoints].sort((a, b) => {
+    if (a.agent_active === b.agent_active) {
+      const ta = a.last_seen ? new Date(a.last_seen).getTime() : 0;
+      const tb = b.last_seen ? new Date(b.last_seen).getTime() : 0;
+      return tb - ta;
+    }
+    return a.agent_active ? -1 : 1;
+  });
+
+  const displayedEndpoints = sortedEndpoints.slice(0, 5);
 
   const highlightObservation = (text) => {
     if (!text || typeof text !== "string") return text;
@@ -179,18 +204,26 @@ export default function Dashboard() {
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Endpoints</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Displaying top 5 active endpoints.
+                {totalEndpoints === 0
+                  ? "No endpoints registered yet."
+                  : totalEndpoints <= 5
+                  ? `Showing all ${totalEndpoints} endpoint${totalEndpoints === 1 ? '' : 's'}`
+                  : `Showing top 5 active of ${totalEndpoints}`}
               </p>
             </div>
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-700">
-            {endpoints.length === 0 && (
+            {loadingEndpoints ? (
+              <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">
+                Loading endpoints...
+              </div>
+            ) : displayedEndpoints.length === 0 ? (
               <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">
                 No endpoints found. Make sure agents are registered.
               </div>
-            )}
-            {endpoints.slice(0, 5).map((ep) => (
-              <div key={ep.endpoint_id}>
+            ) : (
+              displayedEndpoints.map((ep) => (
+                <div key={ep.endpoint_id}>
                 {/* Endpoint Row */}
                 <div className="p-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                   <div>
@@ -378,14 +411,14 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-            ))}
-            {endpoints.length > 5 && (
+            )))}
+            {!loadingEndpoints && totalEndpoints > 5 && (
               <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-center bg-slate-50/50 dark:bg-slate-900/50 rounded-b-2xl">
                 <button
                   onClick={() => { window.location.href = "/endpoints"; }}
                   className="group inline-flex items-center gap-2 px-6 py-2 bg-white dark:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest rounded-full border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:text-slate-900 dark:hover:text-white transition-all duration-300 active:scale-95"
                 >
-                  View All {endpoints.length} Endpoints
+                  View All {totalEndpoints} Endpoints
                   <svg className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-900 dark:group-hover:text-white transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
