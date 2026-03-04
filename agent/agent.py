@@ -95,10 +95,30 @@ def run_agent():
 
 
 import requests
+import time
+import hmac
+import hashlib
+from datetime import timezone
+
 BACKEND_URL = "http://127.0.0.1:8000"
 print(f"DEBUG: Using BACKEND_URL={BACKEND_URL}")
 # SCANS_URL = "http://127.0.0.1:8000/api/scans/"
 SCANS_URL = f"{BACKEND_URL}/api/scans/"
+
+def get_auth_headers():
+    timestamp = datetime.now(timezone.utc).isoformat()
+    nonce = str(uuid.uuid4())
+    return {
+        "Authorization": f"Bearer {get_api_key()}",
+        "X-Timestamp": timestamp,
+        "X-Nonce": nonce
+    }
+
+def verify_signature(job_id, timestamp_str, signature):
+    api_key = get_api_key()
+    message = f"{job_id}:{timestamp_str}".encode("utf-8")
+    expected_signature = hmac.new(api_key.encode("utf-8"), message, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected_signature, signature)
 
 def send_scan_to_backend(scan_data: dict, endpoint_id: str):
     """
@@ -114,7 +134,7 @@ def send_scan_to_backend(scan_data: dict, endpoint_id: str):
     payload["os"] = payload.get("os") or system_info.get("os") or "Unknown"
     
     try:
-        headers = {"Authorization": f"Bearer {get_api_key()}"}
+        headers = get_auth_headers()
         response = requests.post(
             SCANS_URL,
             json=payload,
@@ -135,17 +155,11 @@ def send_scan_to_backend(scan_data: dict, endpoint_id: str):
         print(str(e))
 
 
-import time
-import requests
-
-POLL_INTERVAL = 30  # seconds
-
-
-def poll_for_jobs(endpoint_id):
+def poll_and_heartbeat():
     try:
-        headers = {"Authorization": f"Bearer {get_api_key()}"}
-        response = requests.get(
-            f"{BACKEND_URL}/api/agent/jobs/{endpoint_id}",
+        headers = get_auth_headers()
+        response = requests.post(
+            f"{BACKEND_URL}/api/agent/poll",
             headers=headers,
             timeout=5
         )
@@ -156,11 +170,11 @@ def poll_for_jobs(endpoint_id):
 
 def mark_job_complete(job_id):
     try:
-        headers = {"Authorization": f"Bearer {get_api_key()}"}
+        headers = get_auth_headers()
         requests.post(
             f"{BACKEND_URL}/api/agent/jobs/{job_id}/complete",
             headers=headers,
-            timeout=5
+            timeout=5   
         )
     except Exception:
         pass
@@ -169,19 +183,30 @@ def mark_job_complete(job_id):
 def agent_main_loop(endpoint_id: str, hostname: str):
     print(f"[+] Agent started for endpoint: {hostname}")
 
+    poll_interval = 60  # Default secure poll interval
+
     while True:
-        send_heartbeat(endpoint_id)
-        job = poll_for_jobs(endpoint_id)
+        job = poll_and_heartbeat()
 
-        if job and job.get("job_type") == "RUN_SCAN":
-            print("[+] Received RUN_SCAN job")
+        if job and job.get("job_id"):
+            job_id = job.get("job_id")
+            timestamp = job.get("timestamp")
+            signature = job.get("signature")
 
-            scan_result = run_agent()
-            send_scan_to_backend(scan_result, endpoint_id)
-            mark_job_complete(job["job_id"])
-            send_heartbeat(endpoint_id)  # Update status immediately after job completion
-            
-        time.sleep(POLL_INTERVAL)
+            if not signature or not verify_signature(job_id, timestamp, signature):
+                print(f"[-] Security violation: Job signature verification failed for job {job_id}! Rejecting job.")
+            elif job.get("job_type") == "RUN_SCAN":
+                print("[+] Received RUN_SCAN job. Signature verified.")
+                poll_interval = 10  # Temporarily speed up polling
+
+                scan_result = run_agent()
+                send_scan_to_backend(scan_result, endpoint_id)
+                mark_job_complete(job_id)
+                
+                poll_interval = 60  # Reset poll interval
+                poll_and_heartbeat()  # Immediate heartbeat after job completion
+
+        time.sleep(poll_interval)
 
 
 def register_agent(endpoint_id: str):
@@ -196,6 +221,7 @@ def register_agent(endpoint_id: str):
             f"{BACKEND_URL}/api/agent/register",
             json=payload,
             timeout=5
+            
         )
         data = r.json() if r.text else {}
         if data.get("status") == "registered":
@@ -212,10 +238,10 @@ def register_agent(endpoint_id: str):
     except Exception as e:
         print("[-] Agent registration failed:", e)
 
-
 def send_heartbeat(endpoint_id):
+    # Backward compatibility stub. Main loop now uses poll_and_heartbeat.
     try:
-        headers = {"Authorization": f"Bearer {get_api_key()}"}
+        headers = get_auth_headers()
         requests.post(
             f"{BACKEND_URL}/api/agent/heartbeat/{endpoint_id}",
             headers=headers,

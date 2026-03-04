@@ -11,6 +11,7 @@ router = APIRouter(prefix="/api/interpret", tags=["Interpretation (Read)"])
 
 
 @router.get("/latest")
+@router.get("/latest/", include_in_schema=False)
 def get_latest_interpretation():
     """
     Returns the most recent interpretation result.

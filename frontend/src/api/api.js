@@ -106,3 +106,8 @@ export async function sendContactMessage(formData) {
   });
   return res;
 }
+
+export async function getDashboardSummary() {
+  const res = await fetch(`${BASE_URL}/api/dashboard/summary`);
+  return res.json();
+}

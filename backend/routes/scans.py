@@ -22,6 +22,8 @@ from backend.db.mongo import endpoint_scans_collection
 from backend.services.endpoint_service import upsert_endpoint
 from backend.limiter import limiter
 from backend.api_auth import verify_api_key
+from backend.routes.dashboard import update_dashboard_cache
+from backend.routes.websockets import manager
 
 router = APIRouter(prefix="/api/scans", tags=["Scans"])
 logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/")
 @limiter.limit("5/minute")  # Max 5 scans per minute
-def upload_scan(request: Request, scan: dict, auth_endpoint_id: str = Depends(verify_api_key)):
+async def upload_scan(request: Request, scan: dict, auth_endpoint_id: str = Depends(verify_api_key)):
     """
     Receives raw scan data from an endpoint agent.
 
@@ -71,6 +73,10 @@ def upload_scan(request: Request, scan: dict, auth_endpoint_id: str = Depends(ve
         
         if result.inserted_id:
             logger.info(f"Successfully stored scan for endpoint {endpoint_id}")
+            # Trigger Cache Update & Broadcasting
+            update_dashboard_cache()
+            await manager.broadcast({"type": "scan_completed", "endpoint_id": str(endpoint_id), "hostname": hostname})
+            await manager.broadcast({"type": "posture_updated"})
         else:
             logger.error(f"Failed to store scan for endpoint {endpoint_id}: No inserted_id")
             raise Exception("Scan storage failed: No inserted_id returned")

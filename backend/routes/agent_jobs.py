@@ -1,17 +1,74 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
 from datetime import datetime, timezone, timedelta
 import uuid
+import hmac
+import hashlib
 
-from backend.db.mongo import agent_jobs_collection
+from backend.db.mongo import agent_jobs_collection, endpoints_collection
 from backend.limiter import limiter
 from backend.api_auth import verify_api_key
 
 router = APIRouter(prefix="/api/agent", tags=["Agent Jobs"])
 
+def generate_job_signature(api_key: str, job_id: str, timestamp_str: str) -> str:
+    message = f"{job_id}:{timestamp_str}".encode("utf-8")
+    return hmac.new(api_key.encode("utf-8"), message, hashlib.sha256).hexdigest()
 
-# primary job-polling endpoint (no trailing slash helps client form URLs cleanly)
+@router.post("/poll")
+@limiter.limit("100/minute")
+def poll_and_heartbeat(request: Request, auth_endpoint_id: str = Depends(verify_api_key)):
+    """
+    Combined polling and heartbeat endpoint.
+    1. Updates last_seen.
+    2. Returns a pending job with HMAC signature for Job Integrity Protection.
+    """
+    now = datetime.now(timezone.utc)
+    
+    # 1. Update Heartbeat
+    endpoints_collection().update_one(
+        {"endpoint_id": auth_endpoint_id},
+        {"$set": {"last_seen": now}}
+    )
+    
+    # Get API key to generate HMAC signature
+    endpoint = endpoints_collection().find_one({"endpoint_id": auth_endpoint_id})
+    api_key = endpoint.get("api_key", "") if endpoint else ""
+    
+    # 2. Check for pending jobs
+    job = agent_jobs_collection().find_one({
+        "endpoint_id": auth_endpoint_id,
+        "status": "pending",
+        "expires_at": {"$gt": now}
+    })
+    
+    if not job:
+        # Fallback check for legacy ObjectId
+        from bson import ObjectId
+        if ObjectId.is_valid(auth_endpoint_id):
+            job = agent_jobs_collection().find_one({
+                "endpoint_id": ObjectId(auth_endpoint_id),
+                "status": "pending",
+                "expires_at": {"$gt": now}
+            })
+            
+    if not job:
+        return {"status": "no_job"}
+        
+    job_id = job.get("job_id")
+    job_type = job.get("job_type", "RUN_SCAN")
+    timestamp_str = now.isoformat()
+    signature = generate_job_signature(api_key, job_id, timestamp_str)
+    
+    return {
+        "job_id": job_id,
+        "job_type": job_type,
+        "timestamp": timestamp_str,
+        "signature": signature
+    }
+
+# primary job-polling endpoint (no trailing slash helps client form URLs cleanly) - Legacy
 @router.get("/jobs/{endpoint_id}")
-@limiter.limit("3/minute")  # Max 3 requests per minute (prevents race condition with 30s polling)
+@limiter.limit("100/minute")  # Updated to accommodate potentially faster secure polling if used
 def get_pending_job(request: Request, endpoint_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
     """
     Agent polls for pending jobs assigned to it.
@@ -46,15 +103,22 @@ def get_pending_job(request: Request, endpoint_id: str, auth_endpoint_id: str = 
     if not job:
         return {"status": "no_job"}
 
+    # Generate HMAC for backward compatible clients if they upgrade logic but use old endpoint
+    endpoint = endpoints_collection().find_one({"endpoint_id": auth_endpoint_id})
+    api_key = endpoint.get("api_key", "") if endpoint else ""
+    timestamp_str = now.isoformat()
+    signature = generate_job_signature(api_key, job.get("job_id"), timestamp_str)
+
     return {
         "job_id": job.get("job_id"),
-        "job_type": job.get("job_type", "RUN_SCAN")
+        "job_type": job.get("job_type", "RUN_SCAN"),
+        "timestamp": timestamp_str,
+        "signature": signature
     }
-
 
 # alias to accept a trailing slash without forcing a redirect
 @router.get("/jobs/{endpoint_id}/", include_in_schema=False)
-@limiter.limit("3/minute")
+@limiter.limit("100/minute")
 def get_pending_job_slash(request: Request, endpoint_id: str, auth_endpoint_id: str = Depends(verify_api_key)):
     # simply forward to main handler
     return get_pending_job(request, endpoint_id, auth_endpoint_id)

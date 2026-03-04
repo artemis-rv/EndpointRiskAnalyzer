@@ -15,8 +15,9 @@ This file intentionally avoids:
 - Interpretation logic
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 from backend.db.mongo import db, ensure_database_exists
 
@@ -46,15 +47,34 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# -------------------------------
+# Security Middleware
+# -------------------------------
+# Redirect HTTP to HTTPS
+import os
+# Enforce HTTPS redirect only if explicitly enabled (useful for local dev without certs)
+if os.getenv("ENFORCE_HTTPS", "false").lower() == "true":
+    from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    return response
 
 # -------------------------------
 # CORS Configuration
 # -------------------------------
-# Required later for React frontend
+# Allow common local development origins by default, extendable via environment
+cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000")
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten later
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -126,6 +146,8 @@ def root():
 from backend.routes.ml_routes import router as ml_router
 from backend.routes.analytics import router as analytics_charts_router
 from backend.routes.contact import router as contact_router
+from backend.routes.websockets import router as websockets_router
+from backend.routes.dashboard import router as dashboard_router
 
 app.include_router(scans_router)
 app.include_router(endpoints_router)
@@ -141,6 +163,8 @@ app.include_router(ml_router)
 app.include_router(report)
 app.include_router(analytics_charts_router)
 app.include_router(contact_router)
+app.include_router(websockets_router)
+app.include_router(dashboard_router)
 
 
 # if __name__ == "__main__":

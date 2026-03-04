@@ -5,6 +5,7 @@ import logging
 
 from backend.db.mongo import agent_jobs_collection, endpoints_collection
 from backend.services.endpoint_service import is_agent_active
+from backend.routes.websockets import manager
 
 router = APIRouter(prefix="/api/jobs", tags=["Job Scheduler"])
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ def list_jobs():
 
 
 @router.post("/scan/all")
-def schedule_scan_all():
+async def schedule_scan_all():
     """
     Schedule RUN_SCAN job for all registered endpoints.
     Run the agent first so it registers an endpoint; then this creates jobs for each.
@@ -86,8 +87,6 @@ def schedule_scan_all():
         # Determine initial status based on agent activity
         status = "pending" if is_agent_active(ep.get("last_seen"), threshold_seconds=60) else "disconnected"
         # Check if there is already a pending job for this endpoint to avoid duplicates
-        # We only check for PENDING jobs. If there is a "disconnected" job, we might want to schedule a new one?
-        # Actually, let's just avoid duplicates for any non-completed, non-expired job to keep it clean.
         existing_job = agent_jobs_collection().find_one({
             "endpoint_id": str(eid),
             "status": {"$in": ["pending", "disconnected"]},
@@ -112,6 +111,15 @@ def schedule_scan_all():
             })
             count += 1
             logger.info(f"Created job {job_id} for endpoint {eid} with status '{status}'")
+            
+            # Broadcast the job_created event
+            await manager.broadcast({
+                "type": "job_created",
+                "job_id": job_id,
+                "endpoint_id": str(eid),
+                "status": status
+            })
+            
         except Exception as e:
             logger.error(f"Failed to create job for endpoint {eid}: {str(e)}")
             continue

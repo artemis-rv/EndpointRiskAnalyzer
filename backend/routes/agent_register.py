@@ -3,12 +3,13 @@ from datetime import datetime, timezone
 import secrets
 from backend.db.mongo import endpoints_collection
 from backend.api_auth import verify_api_key
+from backend.routes.websockets import manager
 
 router = APIRouter(prefix="/api/agent", tags=["Agent Registration"])
 
 
 @router.post("/register")
-def register_agent(payload: dict = Body(...)):
+async def register_agent(payload: dict = Body(...)):
     endpoint_id = payload.get("endpoint_id")
 
     if not endpoint_id:
@@ -36,6 +37,12 @@ def register_agent(payload: dict = Body(...)):
         },
         upsert=True
     )
+    
+    await manager.broadcast({
+        "type": "agent_connected",
+        "endpoint_id": endpoint_id,
+        "hostname": payload.get("hostname")
+    })
 
     return {"status": "registered", "api_key": api_key}
 

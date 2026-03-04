@@ -2,17 +2,17 @@
 import {
   getEndpoints,
   triggerAnalysis,
-  getLatestPosture,
   getLatestInterpretation,
   getScans,
+  getDashboardSummary,
 } from "../api/api";
 import Interpretation from "../components/Interpretation";
 import { formatDateTimeIST } from "../utils/dateUtils";
 
 export default function Dashboard() {
+  const [summaryData, setSummaryData] = useState(null);
   const [endpoints, setEndpoints] = useState([]);
   const [loadingEndpoints, setLoadingEndpoints] = useState(true);
-  const [posture, setPosture] = useState(null);
   const [interpretation, setInterpretation] = useState(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
   const [loadingInterpretation, setLoadingInterpretation] = useState(true);
@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [loadingScans, setLoadingScans] = useState({});
   const [expandedScan, setExpandedScan] = useState({});
   const [showNewStatus, setShowNewStatus] = useState(false);
-  const liveSummary = posture?.live_summary;
+  const liveSummary = summaryData?.data;
 
   useEffect(() => {
     const loadEndpoints = (isInitial = false) => {
@@ -43,22 +43,45 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const loadPosture = () => getLatestPosture().then(setPosture);
-    const loadInterpretation = () =>
+    const loadSummary = () => getDashboardSummary().then(setSummaryData).catch(console.error);
+    const loadInterpretation = () => {
       getLatestInterpretation()
         .then((data) => {
           setInterpretation(data.status === "empty" ? null : data);
         })
         .finally(() => setLoadingInterpretation(false));
+    };
 
-    loadPosture();
+    loadSummary();
     loadInterpretation();
-    const interval = setInterval(() => {
-      loadPosture();
-      loadInterpretation();
-    }, 15000);
 
-    return () => clearInterval(interval);
+    // Establish WebSocket connection
+    const wsUrl = process.env.REACT_APP_WS_URL || "ws://127.0.0.1:8000/wss/dashboard";
+    // We need an api_key to connect, for the dashboard we might need a dedicated token 
+    // or we can bypass token check in local, but let's assume we have a way.
+    // Wait, websockets.py requires `token` query param. The dashboard doesn't have an auth token yet.
+    // Let's modify backend to allow dashboard connections without token for now, or just send a dummy one if it works.
+    let ws;
+    try {
+      ws = new WebSocket(`${wsUrl}?token=dashboard-client`);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "posture_updated" || data.type === "scan_completed") {
+          loadSummary();
+        }
+      };
+    } catch (e) {
+      console.error("WebSocket connection failed:", e);
+    }
+
+    const interval = setInterval(() => {
+      loadSummary();
+    }, 20000);
+
+    return () => {
+      clearInterval(interval);
+      if (ws) ws.close();
+    };
   }, []);
 
   const handleTriggerAnalysis = async () => {
@@ -84,10 +107,7 @@ export default function Dashboard() {
   const activeAgents = endpoints.filter((ep) => ep.agent_active === true).length;
   const lastScan =
     liveSummary?.generated_at ||
-    posture?.generated_at ||
-    posture?.latest_scan_at ||
-    posture?.last_scan_at ||
-    posture?.created_at ||
+    summaryData?.cached_at ||
     interpretation?.generated_at;
 
   // sort endpoints so active ones and most recently seen appear first

@@ -37,7 +37,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 
 
 # Database name for this project
-DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev1")  #dev is only for testing
+DB_NAME = os.getenv("DB_NAME", "org_security_posture_dev1new")  #dev is only for testing
 #change when deploying
 
 
@@ -75,6 +75,7 @@ REQUIRED_COLLECTIONS = [
     "org_posture_snapshots",
     "org_interpretations",
     "agent_jobs",
+    "nonces",
 ]
 
 
@@ -104,6 +105,16 @@ def ensure_database_exists():
         # Index might already exist, that's fine
         pass
 
+    # Create TTL index on nonces collection (2 minutes TTL = 120 seconds)
+    try:
+        db["nonces"].create_index(
+            "expires_at",
+            expireAfterSeconds=120,
+            name="nonce_ttl_index"
+        )
+    except Exception as e:
+        pass
+
 
 # -------------------------------
 # Collection Access Helpers
@@ -131,3 +142,5 @@ def org_interpretations_collection():
 def agent_jobs_collection():
     return db["agent_jobs"]
 
+def nonces_collection():
+    return db["nonces"]
