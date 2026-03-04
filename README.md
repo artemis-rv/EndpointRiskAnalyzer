@@ -1,13 +1,9 @@
 <div align="center">
 
-  <div style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 40px 0; width: 100%; color: white;">
-    <h1 style="margin: 0; color: white; border-bottom: none;">🛡️ Risk Intel</h1>
-    <p style="margin: 10px 0 0 0; font-size: 1.2em; color: #e0e7ff;">
-      <strong>Endpoint Risk Analyzer</strong>
-    </p>
-  </div>
-  
-  <hr style="width: 100%; height: 1px; border: none; background-color: #e2e8f0; margin-top: 0;" />
+  <picture>
+    <img src="header.svg" width="100%" alt="Risk Intel Banner" />
+  </picture>
+
   <p>
     An intelligent, agent-based platform for evaluating endpoint security posture using CIS benchmarks, ML-assisted risk scoring, and real-time visualization.
   </p>
