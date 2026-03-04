@@ -1,8 +1,10 @@
 <div align="center">
 
-  <picture>
+  <!-- <picture>
     <img src="header.svg" width="100%" alt="Risk Intel Banner" />
-  </picture>
+  </picture> -->
+  # Risk Intel <br> 
+  ### EndpointRiskAnalyzer
 
   <p>
     An intelligent, agent-based platform for evaluating endpoint security posture using CIS benchmarks, ML-assisted risk scoring, and real-time visualization.
