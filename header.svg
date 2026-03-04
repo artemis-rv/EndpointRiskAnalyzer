@@ -1,15 +1,26 @@
-<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 800 122" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#4f46e5" />
       <stop offset="100%" stop-color="#3730a3" />
     </linearGradient>
+    <linearGradient id="shield_grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9" /> <!-- Bright Cyan -->
+      <stop offset="100%" stop-color="#0ea5e9" /> <!-- Vivid Blue -->
+    </linearGradient>
   </defs>
-  <rect width="800" height="200" fill="url(#bg)" rx="16" />
-  <!-- Shield Icon -->
-  <g transform="translate(260, 65) scale(1.5)">
-    <path fill="#ffffff" fill-rule="evenodd" d="M12.516 2.17a.75.75 0 0 0-1.032 0 11.209 11.209 0 0 1-7.877 3.08.75.75 0 0 0-.722.515A12.74 12.74 0 0 0 2.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 0 0 .374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 0 0-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08Z" clip-rule="evenodd" />
+  <rect width="800" height="122" fill="url(#bg)" rx="11" />
+  
+  <!-- Group container perfectly centered horizontally -->
+  <g transform="translate(250, -40)">
+    <!-- Shield Icon -->
+    <g transform="translate(15, 68) scale(2.4)">
+      <path fill="url(#shield_grad)" fill-rule="evenodd" d="M12.516 2.17a.75.75 0 0 0-1.032 0 11.209 11.209 0 0 1-7.877 3.08.75.75 0 0 0-.722.515A12.74 12.74 0 0 0 2.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 0 0 .374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 0 0-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08Z" clip-rule="evenodd" />
+    </g>
+    <!-- Text -->
+    <text x="80" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="41" font-weight="800" fill="#ffffff" text-anchor="start" dominant-baseline="middle">Risk Intel</text>
+    
+    <!-- Subtitle (moved much closer to Risk Intel) -->
+    <text x="80" y="116" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="18" font-weight="500" fill="#e0e7ff" text-anchor="start" dominant-baseline="middle">Endpoint Risk Analyzer</text>
   </g>
-  <text x="430" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">Risk Intel</text>
-  <text x="400" y="145" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="500" fill="#e0e7ff" text-anchor="middle" dominant-baseline="middle">Endpoint Risk Analyzer</text>
 </svg>
