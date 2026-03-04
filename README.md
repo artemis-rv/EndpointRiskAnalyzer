@@ -21,6 +21,7 @@
 
 ---
 
+<a id="features"></a>
 ## ✨ Features
 
 - **Real-Time Visibility:** Background agents provide live endpoint telemetry (OS info, system configurations) directly to the dashboard.
@@ -34,6 +35,7 @@
 
 ---
 
+<a id="tech-stack"></a>
 ## 💻 Tech Stack
 
 <div align="center">
@@ -65,6 +67,7 @@
 
 ---
 
+<a id="architecture"></a>
 ## 🏗️ Architecture
 
 1. **Endpoint Agent:** A lightweight Windows-compatible Python script (`agent.py`) that runs silently on target machines. It establishes an authenticated, encrypted polling cycle with the central server.
@@ -73,6 +76,7 @@
 
 ---
 
+<a id="getting-started"></a>
 ## 🚀 Getting Started
 
 Follow these steps to deploy Risk Intel on your network.
