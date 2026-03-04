@@ -1,26 +1,62 @@
-<svg viewBox="0 0 800 122" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 1200 300" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f46e5" />
-      <stop offset="100%" stop-color="#3730a3" />
+    <!-- Background Gradient: Subtle purple to deep navy -->
+    <linearGradient id="bg_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2e1065" /> <!-- Deep Purple -->
+      <stop offset="50%" stop-color="#1e1b4b" /> <!-- Indigo/Navy -->
+      <stop offset="100%" stop-color="#0f172a" /> <!-- Dark Slate -->
     </linearGradient>
-    <linearGradient id="shield_grad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#67e8f9" /> <!-- Bright Cyan -->
-      <stop offset="100%" stop-color="#0ea5e9" /> <!-- Vivid Blue -->
+
+    <!-- Refined Glass/Lighting Overlay -->
+    <linearGradient id="glass_shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.05" />
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.00" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.25" />
+    </linearGradient>
+
+    <!-- Subdued Contextual Glow behind the Icon -->
+    <radialGradient id="icon_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Crisp Shield Gradient -->
+    <linearGradient id="shield_fill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" /> <!-- Light Azure -->
+      <stop offset="100%" stop-color="#3b82f6" /> <!-- Vivid Blue -->
+    </linearGradient>
+
+    <!-- Clean Title Gradient for High Contrast -->
+    <linearGradient id="title_grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#ffffff" />
     </linearGradient>
   </defs>
-  <rect width="800" height="122" fill="url(#bg)" rx="11" />
-  
-  <!-- Group container perfectly centered horizontally -->
-  <g transform="translate(250, -40)">
-    <!-- Shield Icon -->
-    <g transform="translate(15, 68) scale(2.4)">
-      <path fill="url(#shield_grad)" fill-rule="evenodd" d="M12.516 2.17a.75.75 0 0 0-1.032 0 11.209 11.209 0 0 1-7.877 3.08.75.75 0 0 0-.722.515A12.74 12.74 0 0 0 2.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 0 0 .374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 0 0-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08Z" clip-rule="evenodd" />
-    </g>
-    <!-- Text -->
-    <text x="80" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="41" font-weight="800" fill="#ffffff" text-anchor="start" dominant-baseline="middle">Risk Intel</text>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="300" fill="url(#bg_grad)" rx="16" />
+  <rect width="1200" height="300" fill="url(#glass_shine)" rx="16" />
+
+  <!-- Content Group -->
+  <!-- Centered horizontally (345) and vertically (94) -->
+  <g transform="translate(345, 94)">
     
-    <!-- Subtitle (moved much closer to Risk Intel) -->
-    <text x="80" y="116" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="18" font-weight="500" fill="#e0e7ff" text-anchor="start" dominant-baseline="middle">Endpoint Risk Analyzer</text>
+    <!-- Subtle radial glow behind icon -->
+    <circle cx="50" cy="55" r="90" fill="url(#icon_glow)" />
+
+    <!-- Shield Icon - height aligned with text block -->
+    <g transform="translate(0, 0) scale(4.5)">
+      <path fill="url(#shield_fill)" fill-rule="evenodd" d="M12.516 2.17a.75.75 0 0 0-1.032 0 11.209 11.209 0 0 1-7.877 3.08.75.75 0 0 0-.722.515A12.74 12.74 0 0 0 2.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 0 0 .374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 0 0-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08Z" clip-rule="evenodd" />
+    </g>
+
+    <!-- Typography Group with precise hierarchy -->
+    <g transform="translate(150, 0)">
+      <!-- Title: Bold, slightly scaled down for premium feel -->
+      <text x="0" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', Roboto, Helvetica, Arial, sans-serif" font-size="70" font-weight="800" fill="url(#title_grad)" letter-spacing="-1">Risk Intel</text>
+      
+      <!-- Subtitle: Lighter weight, 75% opacity, strong spacing from title -->
+      <text x="5" y="104" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="400" fill="rgba(255, 255, 255, 0.75)" letter-spacing="0.5">Endpoint Risk Analyzer</text>
+    </g>
+
   </g>
 </svg>
