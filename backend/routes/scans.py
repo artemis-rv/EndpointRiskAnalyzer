@@ -24,6 +24,7 @@ from backend.limiter import limiter
 from backend.api_auth import verify_api_key
 from backend.routes.dashboard import update_dashboard_cache
 from backend.routes.websockets import manager
+from backend.services.ml_service import mark_model_stale
 
 router = APIRouter(prefix="/api/scans", tags=["Scans"])
 logger = logging.getLogger(__name__)
@@ -74,6 +75,7 @@ async def upload_scan(request: Request, scan: dict, auth_endpoint_id: str = Depe
         if result.inserted_id:
             logger.info(f"Successfully stored scan for endpoint {endpoint_id}")
             # Trigger Cache Update & Broadcasting
+            mark_model_stale()
             update_dashboard_cache()
             await manager.broadcast({"type": "scan_completed", "endpoint_id": str(endpoint_id), "hostname": hostname})
             await manager.broadcast({"type": "posture_updated"})

@@ -30,6 +30,7 @@ import time
 # Import existing checks to avoid duplication
 from day1 import get_firewall_status, get_antivirus_posture
 from day7_exposure import is_rdp_enabled, is_smbv1_enabled
+from day6_priv_posture import get_execution_privilege
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -928,20 +929,36 @@ def check_bitlocker_enabled() -> Dict[str, Any]:
         "powershell", "-Command",
         "Get-BitLockerVolume -MountPoint C: | Select-Object -ExpandProperty VolumeStatus"
     ], timeout=10)
+    priv=get_execution_privilege()
+    output_details=f"C: drive status:{output}"
     
     if status == "success":
         compliant = "FullyEncrypted" in output
+        if priv=="elevated":
+            return {
+                "control_id": "18.9.3",
+                "name": "BitLocker System Drive Encryption",
+                "status": STATUS_COMPLIANT if compliant else STATUS_NON_COMPLIANT,
+                "severity_weight": 3,  # Critical for data protection
+                "details": f"C: drive status: {output if output else 'Not encrypted'}",
+                "reason": "System drive is fully encrypted" if (compliant) else "System drive not encrypted - data at risk",
+                "source_method_used": "powershell_bitlocker",
+                "confidence_level": "high",
+                "remediation_hint": "Enable via: Enable-BitLocker -MountPoint C: -EncryptionMethod XtsAes256"
+            }
+        
         return {
             "control_id": "18.9.3",
             "name": "BitLocker System Drive Encryption",
             "status": STATUS_COMPLIANT if compliant else STATUS_NON_COMPLIANT,
             "severity_weight": 3,  # Critical for data protection
-            "details": f"C: drive status: {output if output else 'Not encrypted'}",
-            "reason": "System drive is fully encrypted" if compliant else "System drive not encrypted - data at risk",
+            "details": output_details if output else STATUS_INSUFFICIENT_PRIVILEGE,
+            "reason": "System drive is fully encrypted" if (compliant ) else STATUS_INSUFFICIENT_PRIVILEGE,
             "source_method_used": "powershell_bitlocker",
             "confidence_level": "high",
             "remediation_hint": "Enable via: Enable-BitLocker -MountPoint C: -EncryptionMethod XtsAes256"
         }
+        
     
     # Fallback: manage-bde
     output, fallback_status, fallback_reason = _safe_powershell_exec([

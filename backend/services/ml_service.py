@@ -10,6 +10,12 @@ import os
 # Global models (in-memory for MVP)
 MODEL_IF = None
 MODEL_KM = None
+MODEL_IS_STALE = False
+
+def mark_model_stale():
+    """Marks the ML model ready for retraining upon next prediction."""
+    global MODEL_IS_STALE
+    MODEL_IS_STALE = True
 # Path to save/load models if needed, but for now in-memory is fine
 # or we can save to disk to persist across reloads.
 MODEL_PATH = "ml_models.pkl"
@@ -167,7 +173,7 @@ def train_models():
     Retrains Isolation Forest and KMeans.
     Returns status dict.
     """
-    global MODEL_IF, MODEL_KM
+    global MODEL_IF, MODEL_KM, MODEL_IS_STALE
     
     # Get real data
     df_real = get_training_data()
@@ -247,6 +253,8 @@ def train_models():
         "model": kmeans,
         "mapping": risk_mapping
     }
+    
+    MODEL_IS_STALE = False
     
     return {"status": "success", "message": f"Trained on {len(df)} samples"}
 
@@ -428,10 +436,10 @@ def predict_risk(scan_data):
     Predicts anomaly and risk for a single scan.
     Returns dict with categorical anomaly assessment instead of raw floats.
     """
-    global MODEL_IF, MODEL_KM
+    global MODEL_IF, MODEL_KM, MODEL_IS_STALE
     
     # Auto-train attempt
-    if MODEL_IF is None:
+    if MODEL_IF is None or MODEL_IS_STALE:
         try:
             res = train_models()
             if res.get('status') == 'error':
