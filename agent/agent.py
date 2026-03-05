@@ -100,7 +100,7 @@ import hmac
 import hashlib
 from datetime import timezone
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = "http://192.168.31.208:8000"
 print(f"DEBUG: Using BACKEND_URL={BACKEND_URL}")
 # SCANS_URL = "http://127.0.0.1:8000/api/scans/"
 SCANS_URL = f"{BACKEND_URL}/api/scans/"

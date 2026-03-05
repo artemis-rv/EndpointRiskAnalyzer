@@ -2,6 +2,7 @@ manifest.json
 *.spec
 *.exe
 build/
+dist/
 
 # Python
 __pycache__/
@@ -15,22 +16,26 @@ venv/
 .env
 .env.*
 
-# Agent build
-build/
-dist/
-*.spec
+# Agent Identification & Security
+.api_key
+.endpoint_id
+endpoint_id.txt
 
 # Logs & runtime data
 logs/
 scans/
-endpoint_id.txt
+*.log
 
 # Node
 node_modules/
+.pnp
+.pnp.js
 
 # OS
 .DS_Store
 Thumbs.db
 
+# Certificates & Keys
 *.cnf
 *.pem
+*.key
