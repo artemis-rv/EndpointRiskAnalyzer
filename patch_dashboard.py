@@ -1,4 +1,12 @@
+"""
+This script is a utility to programmatically patch and update the UI of the Dashboard frontend.
+It performs the following tasks:
+1. Injects a detailed Risk Factor Breakdown and Critical Port Exposure alert into the Dashboard.jsx file.
+2. Refines the 'View All Endpoints' button styling and animations.
+3. Standardizes section headings like 'Latest Posture Summary'.
 
+Usage: Run this script to apply these specific UI enhancements to the React frontend.
+"""
 import os
 
 file_path = r"d:\E\VSCode programs\SEM 4\SGP - systemB\Main\EndpointRiskAnalyzer\frontend\src\pages\Dashboard.jsx"

@@ -21,9 +21,12 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from dotenv import load_dotenv
 
-# # Load environment variables from .env file
-load_dotenv()
+import os
+from pathlib import Path
 
+# Load environment variables from backend/.env file
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # -------------------------------
 # Configuration

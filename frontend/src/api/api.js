@@ -1,6 +1,7 @@
 // only 1 update to do instead of all files
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+// const BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+const BASE_URL = "http://127.0.0.1:8000";
 
 export async function getEndpoints() {
   // always include trailing slash to avoid FastAPI 307 redirect that trips up

@@ -71,7 +71,18 @@ async def schedule_scan_all():
     )
 
     try:
-        endpoints = list(endpoints_collection().find())
+        endpoints_cursor = list(endpoints_collection().find())
+        deduped = {}
+        for ep in endpoints_cursor:
+            hostname = ep.get("hostname") or ep.get("endpoint_id")
+            if hostname not in deduped:
+                deduped[hostname] = ep
+            else:
+                existing_time = deduped[hostname].get("last_seen")
+                new_time = ep.get("last_seen")
+                if new_time and (not existing_time or new_time > existing_time):
+                    deduped[hostname] = ep
+        endpoints = list(deduped.values())
     except Exception:
         endpoints = []
 

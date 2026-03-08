@@ -27,7 +27,24 @@ export default function Dashboard() {
       if (isInitial) setLoadingEndpoints(true);
       return getEndpoints()
         .then((data) => {
-          setEndpoints(data.endpoints || []);
+          let eps = data.endpoints || [];
+
+          // Deduplicate by hostname, keeping the most recently seen
+          const deduplicated = {};
+          eps.forEach(ep => {
+            const currentName = ep.hostname || ep.endpoint_id;
+            if (!deduplicated[currentName]) {
+              deduplicated[currentName] = ep;
+            } else {
+              const existingTime = deduplicated[currentName].last_seen ? new Date(deduplicated[currentName].last_seen).getTime() : 0;
+              const newTime = ep.last_seen ? new Date(ep.last_seen).getTime() : 0;
+              if (newTime > existingTime) {
+                deduplicated[currentName] = ep;
+              }
+            }
+          });
+
+          setEndpoints(Object.values(deduplicated));
         })
         .catch((err) => {
           console.error("Failed to fetch endpoints", err);

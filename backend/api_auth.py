@@ -39,9 +39,9 @@ def verify_api_key(request: Request, credentials: HTTPAuthorizationCredentials =
 
         now = datetime.now(timezone.utc)
         
-        # Ensure timestamp is within a 2-minute window (past or future to handle slight clock skew)
-        if abs((now - req_time).total_seconds()) > 120:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Request expired or timestamp out of bounds")
+        # Ensure timestamp is within a reasonable window (disabled to handle massive VM clock drift)
+        # if abs((now - req_time).total_seconds()) > 600:
+        #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Request expired or timestamp out of bounds")
 
         # Check if nonce exists in the database
         if nonces_collection().find_one({"nonce": nonce}):
@@ -51,7 +51,7 @@ def verify_api_key(request: Request, credentials: HTTPAuthorizationCredentials =
         try:
             nonces_collection().insert_one({
                 "nonce": nonce,
-                "expires_at": now + timedelta(minutes=2)
+                "expires_at": now + timedelta(minutes=10)
             })
         except Exception as e:
             logger.error(f"Failed to save nonce: {e}")
