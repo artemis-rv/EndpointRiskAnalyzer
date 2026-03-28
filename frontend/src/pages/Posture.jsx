@@ -98,7 +98,7 @@ export default function Posture() {
 
       {!loading && !data && (
         <p className="text-slate-500 dark:text-slate-400">
-          No posture data available yet. Run Systemic Analysis from the Dashboard to generate.
+          No security health data available yet. Click "Run Security Check" from the Home page to generate.
         </p>
       )}
 

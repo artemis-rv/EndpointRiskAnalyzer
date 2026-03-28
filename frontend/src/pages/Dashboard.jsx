@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [loadingScans, setLoadingScans] = useState({});
   const [expandedScan, setExpandedScan] = useState({});
   const [showNewStatus, setShowNewStatus] = useState(false);
+  const [analysisStatus, setAnalysisStatus] = useState("idle"); // 'idle' | 'running' | 'done'
   const liveSummary = summaryData?.data;
 
   useEffect(() => {
@@ -102,6 +103,8 @@ export default function Dashboard() {
   }, []);
 
   const handleTriggerAnalysis = async () => {
+    if (analysisStatus === "running") return; // prevent double-click
+    setAnalysisStatus("running");
     try {
       await triggerAnalysis();
       // Emit event so Analytics page auto-refreshes
@@ -111,12 +114,16 @@ export default function Dashboard() {
         getLatestInterpretation().then((data) => {
           setInterpretation(data.status === "empty" ? null : data);
           setShowNewStatus(true);
+          setAnalysisStatus("done");
           // Hide '(new)' tag after 8 seconds
           setTimeout(() => setShowNewStatus(false), 8000);
+          // Reset button back to idle after 6 seconds
+          setTimeout(() => setAnalysisStatus("idle"), 6000);
         });
       }, 5000);
     } catch (error) {
       console.error("Analysis trigger failed", error);
+      setAnalysisStatus("idle");
     }
   };
 
@@ -206,12 +213,39 @@ export default function Dashboard() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleTriggerAnalysis}
-            className="group px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-black shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl dark:hover:shadow-indigo-900/60 transition-all active:scale-95 flex items-center gap-2"
+            disabled={analysisStatus === "running"}
+            className={`group px-5 py-2.5 rounded-xl text-white text-sm font-black shadow-lg transition-all flex items-center gap-2 ${analysisStatus === "running"
+                ? "bg-amber-500 shadow-amber-200 dark:shadow-amber-900/40 cursor-not-allowed opacity-90"
+                : analysisStatus === "done"
+                  ? "bg-green-600 shadow-green-200 dark:shadow-green-900/40 hover:bg-green-700 active:scale-95"
+                  : "bg-indigo-600 shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl dark:hover:shadow-indigo-900/60 active:scale-95"
+              }`}
           >
-            <span>Run Systemic Analysis</span>
-            <svg className="w-4 h-4 text-indigo-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            {analysisStatus === "running" && (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                <span>Analyzing…</span>
+              </>
+            )}
+            {analysisStatus === "done" && (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Analysis Complete</span>
+              </>
+            )}
+            {analysisStatus === "idle" && (
+              <>
+                <span>Run Security Check</span>
+                <svg className="w-4 h-4 text-indigo-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </>
+            )}
           </button>
         </div>
       </div>

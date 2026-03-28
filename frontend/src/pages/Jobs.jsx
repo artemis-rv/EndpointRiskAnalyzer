@@ -21,7 +21,7 @@ export default function Jobs() {
 
   return (
     <div className="p-6 bg-slate-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
-      <h1 className="text-2xl font-semibold mb-6 text-slate-900 dark:text-slate-100">Jobs</h1>
+      <h1 className="text-2xl font-semibold mb-6 text-slate-900 dark:text-slate-100">Scan Activity</h1>
 
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft hover:shadow-soft-lg transition-all duration-300 p-4">
         {loading && (

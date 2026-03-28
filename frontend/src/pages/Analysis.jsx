@@ -81,7 +81,7 @@ export default function Analysis() {
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
                         Posture Analysis
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2">Visual analytics engine for organizational security posture.</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2">A visual overview of your organization's device security health.</p>
                 </div>
             </div>
 

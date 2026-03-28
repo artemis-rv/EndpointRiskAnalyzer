@@ -18,7 +18,7 @@ export default function Interpretation() {
   if (!data || data.status === "empty") {
     return (
       <p className="text-sm text-gray-500">
-        No interpretation available yet. Run &quot;Run Systemic Analysis&quot; to generate posture and interpretation.
+        No interpretation available yet. Click "Run Security Check" on the Home page to generate your security health summary.
       </p>
     );
   }
