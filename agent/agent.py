@@ -12,15 +12,13 @@ Endpoint agent responsible for:
 This file is the ONLY executable on endpoints.
 """
 
-import day2
 # import day3
 # import day4
 import json
-import day6_priv_posture as d6
-import day7_exposure as d7
-import day8_cis_compliance as d8
 
 # import day5_anomaly_detect
+# NOTE: day2, day6, day7, day8 are imported inside run_agent() under a
+# platform guard so this file does not crash when loaded on Linux.
 
 import os
 import socket
@@ -61,31 +59,41 @@ def get_or_create_endpoint_id():
     return eid
 
 
-def run_agent():
-    # Day 1 + Day 2: data collection
-    scan = {}
-    # scan.update(day1.run_day1_scan())
-    scan.update(day2.run_day2_scan())
+def run_agent() -> dict:
+    """
+    Collect endpoint security data and return structured scan dict.
+    Dispatches to Windows or Linux pipeline based on platform.
+    """
+    import platform
+    _os = platform.system()
 
-    # Day 3: feature engineering
-    # features, risk = day3.extract_features(scan)
-    # scan["features"] = features
+    if _os == "Windows":
+        # ── Windows pipeline (day1 → day2 → day6 → day7 → day8) ──────────
+        import day2
+        import day6_priv_posture as d6
+        import day7_exposure     as d7
+        import day8_cis_compliance as d8
 
-    # Day 4: risk scoring
-    # scan["risk_assessment"] = risk
+        scan: dict = {}
+        scan.update(day2.run_day2_scan())                    # metadata, system, security, AV, software, runtimes
+        scan["privilege_posture"] = d6.collect_privilege_posture()
+        scan["exposure_posture"]  = d7.collect_exposure_posture()
+        scan["cis_compliance"]    = d8.collect_cis_compliance()
 
-    #Day 6: Privilege Posture
-    scan["privilege_posture"]=d6.collect_privilege_posture()
+    elif _os == "Linux":
+        # ── Linux pipeline (linux_commands + linux_cis via linux_data) ───
+        import sys
+        _linux_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Linux")
+        if _linux_dir not in sys.path:
+            sys.path.insert(0, _linux_dir)
+        from linux_data import build_linux_scan
+        scan = build_linux_scan()
 
-    #Day 7: exposure check
-    scan["exposure_posture"]=d7.collect_exposure_posture()
-    
-    #Day 8: CIS Compliance
-    scan["cis_compliance"]=d8.collect_cis_compliance()
-    
-    # Output
-    # print(json.dumps(scan, indent=2))
-
+    else:
+        scan = {
+            "error": f"Unsupported platform: {_os}",
+            "system": {"os": _os}
+        }
 
     return scan
 
@@ -105,8 +113,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file if it exists
 load_dotenv()
 
-# BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+# BACKEND_URL = "http://127.0.0.1:8000"
 print(f"[*] Target Backend: {BACKEND_URL}")
 
 SCANS_URL = f"{BACKEND_URL}/api/scans/"

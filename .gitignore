@@ -1,41 +1,142 @@
-manifest.json
-*.spec
-*.exe
-build/
-dist/
+# =============================================================================
+# EndpointRiskAnalyzer — Root .gitignore
+# Covers: Python backend, React frontend, agent, certificates, OS artefacts
+# =============================================================================
 
+# -----------------------------------------------------------------------------
 # Python
+# -----------------------------------------------------------------------------
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.pyd
 *.pyo
+
+# Virtual environments
 venv/
 .venv/
-*.pyd
+env/
+ENV/
 
-# Environment variables
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# PyInstaller bundles (agent build output)
+*.spec
+agent/build/
+agent/dist/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+
+# -----------------------------------------------------------------------------
+# Environment Variables & Secrets  ← NEVER commit these
+# -----------------------------------------------------------------------------
 .env
 .env.*
+!.env.example          # keep the example template
 
-# Agent Identification & Security
-.api_key
-.endpoint_id
+# Agent identity & auth tokens
+agent/.api_key
+agent/.endpoint_id
 endpoint_id.txt
+*.api_key
+*.endpoint_id
 
-# Logs & runtime data
-logs/
-scans/
-*.log
-
-# Node
-node_modules/
-.pnp
-.pnp.js
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Certificates & Keys
-*.cnf
+# TLS / SSL certificates and keys
 *.pem
 *.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.cnf
+
+# -----------------------------------------------------------------------------
+# Node / React frontend
+# -----------------------------------------------------------------------------
+node_modules/
+/frontend/build/
+/frontend/.pnp
+/frontend/.pnp.js
+/frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -----------------------------------------------------------------------------
+# Agent — scan output & compiled executables
+# -----------------------------------------------------------------------------
+scans/
+*.json
+!**/package.json          # never ignore package.json
+!**/package-lock.json     # never ignore package-lock.json
+
+# PyInstaller compiled agent binaries
+agent/build/
+agent/dist/
+
+# Linux venv (created in WSL for testing)
+agent/venv_linux/
+agent/venv-linux/
+
+# -----------------------------------------------------------------------------
+# Logs & runtime
+# -----------------------------------------------------------------------------
+logs/
+*.log
+*.log.*
+
+# -----------------------------------------------------------------------------
+# IDE & editor
+# -----------------------------------------------------------------------------
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+*~
+
+# -----------------------------------------------------------------------------
+# OS
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# -----------------------------------------------------------------------------
+# Misc project files that should not be committed
+# -----------------------------------------------------------------------------
+# Loose debug / utility scripts at root
+debug_path.py
+inspect_data.py
+inspect_ml_features.py
+get_id.py
+patch_dashboard.py
+rotate_keys.py
+simple_server.py
+test_connect.py
+test_cis_integration.py
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
