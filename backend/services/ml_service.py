@@ -257,26 +257,26 @@ def train_models():
     
     MODEL_IS_STALE = False
     
-    # Evaluate model against synthetic baseline (since real data lacks ground truth labels)
-    try:
-        from sklearn.metrics import confusion_matrix, classification_report
-        # Based on generate_synthetic_baseline(): 50 Good (Low), 15 Medium, 10 High
-        true_labels = ["Low"] * 50 + ["Medium"] * 15 + ["High"] * 10
-        baseline_X = df_baseline.values
-        baseline_scores = clf.decision_function(baseline_X)
-        baseline_clusters = kmeans.predict(baseline_scores.reshape(-1, 1))
-        pred_labels = [risk_mapping.get(c, "Unknown") for c in baseline_clusters]
+    # # Evaluate model against synthetic baseline (since real data lacks ground truth labels)
+    # try:
+    #     from sklearn.metrics import confusion_matrix, classification_report
+    #     # Based on generate_synthetic_baseline(): 50 Good (Low), 15 Medium, 10 High
+    #     true_labels = ["Low"] * 50 + ["Medium"] * 15 + ["High"] * 10
+    #     baseline_X = df_baseline.values
+    #     baseline_scores = clf.decision_function(baseline_X)
+    #     baseline_clusters = kmeans.predict(baseline_scores.reshape(-1, 1))
+    #     pred_labels = [risk_mapping.get(c, "Unknown") for c in baseline_clusters]
         
-        print("\n" + "="*60)
-        print("ML MODEL EVALUATION (Synthetic Baseline)")
-        print("="*60)
-        print("Confusion Matrix (Rows: True, Cols: Predicted - [High, Medium, Low]):")
-        print(confusion_matrix(true_labels, pred_labels, labels=["High", "Medium", "Low"]))
-        print("\nClassification Report:")
-        print(classification_report(true_labels, pred_labels, labels=["High", "Medium", "Low"], zero_division=0))
-        print("="*60 + "\n")
-    except Exception as e:
-        print(f"Evaluation print failed: {e}")
+    #     print("\n" + "="*60)
+    #     print("ML MODEL EVALUATION (Synthetic Baseline)")
+    #     print("="*60)
+    #     print("Confusion Matrix (Rows: True, Cols: Predicted - [High, Medium, Low]):")
+    #     print(confusion_matrix(true_labels, pred_labels, labels=["High", "Medium", "Low"]))
+    #     print("\nClassification Report:")
+    #     print(classification_report(true_labels, pred_labels, labels=["High", "Medium", "Low"], zero_division=0))
+    #     print("="*60 + "\n")
+    # except Exception as e:
+    #     print(f"Evaluation print failed: {e}")
 
     return {"status": "success", "message": f"Trained on {len(df)} samples"}
 
