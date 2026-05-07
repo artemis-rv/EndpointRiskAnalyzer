@@ -21,6 +21,14 @@
 
 ---
 
+## License
+
+This project is source-available software intended for educational, research, and non-commercial purposes.
+Commercial usage, resale, managed hosting, or redistribution is prohibited without explicit permission.
+See LICENSE and TERMS.md for details.
+
+---
+
 <a id="features"></a>
 ## ✨ Features
 
