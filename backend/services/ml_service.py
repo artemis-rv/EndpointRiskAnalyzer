@@ -195,6 +195,7 @@ def train_models():
         df_baseline = df_baseline[FEATURE_COLUMNS] 
         
         df = pd.concat([df_real, df_baseline], ignore_index=True)
+        # df = df_baseline
     
     # Handle missing values if any
     df = df.fillna(0)
@@ -256,6 +257,27 @@ def train_models():
     
     MODEL_IS_STALE = False
     
+    # Evaluate model against synthetic baseline (since real data lacks ground truth labels)
+    try:
+        from sklearn.metrics import confusion_matrix, classification_report
+        # Based on generate_synthetic_baseline(): 50 Good (Low), 15 Medium, 10 High
+        true_labels = ["Low"] * 50 + ["Medium"] * 15 + ["High"] * 10
+        baseline_X = df_baseline.values
+        baseline_scores = clf.decision_function(baseline_X)
+        baseline_clusters = kmeans.predict(baseline_scores.reshape(-1, 1))
+        pred_labels = [risk_mapping.get(c, "Unknown") for c in baseline_clusters]
+        
+        print("\n" + "="*60)
+        print("ML MODEL EVALUATION (Synthetic Baseline)")
+        print("="*60)
+        print("Confusion Matrix (Rows: True, Cols: Predicted - [High, Medium, Low]):")
+        print(confusion_matrix(true_labels, pred_labels, labels=["High", "Medium", "Low"]))
+        print("\nClassification Report:")
+        print(classification_report(true_labels, pred_labels, labels=["High", "Medium", "Low"], zero_division=0))
+        print("="*60 + "\n")
+    except Exception as e:
+        print(f"Evaluation print failed: {e}")
+
     return {"status": "success", "message": f"Trained on {len(df)} samples"}
 
 def categorize_anomaly_score(score: float) -> dict:
@@ -263,10 +285,10 @@ def categorize_anomaly_score(score: float) -> dict:
     Convert raw Isolation Forest anomaly score into categorical deviation bands.
     
     Threshold Bands:
-    - score < -0.3: "Hardened" (better than baseline)
-    - -0.3 ≤ score < -0.1: "Baseline Aligned" (normal)
-    - -0.1 ≤ score < 0.2: "Moderate Deviation" (some deviations)
-    - score ≥ 0.2: "Strong Deviation" (significant anomaly)
+    - score < -0.3: "Strong Deviation" (significant anomaly)
+    - -0.3 ≤ score < -0.1: "Moderate Deviation" (some deviations)
+    - -0.1 ≤ score < 0.2: "Baseline Aligned" (normal)
+    - score ≥ 0.2: "Hardened" (better than baseline)
     
     Args:
         score: Raw anomaly score from Isolation Forest
@@ -276,31 +298,31 @@ def categorize_anomaly_score(score: float) -> dict:
     """
     if score < -0.3:
         return {
-            "deviation_category": "Hardened",
-            "baseline_comparison": "above_baseline",
-            "severity": "positive",
-            "description": "Security posture exceeds organizational baseline"
+            "deviation_category": "Strong Deviation",
+            "baseline_comparison": "significantly_below",
+            "severity": "high",
+            "description": "Security posture significantly deviates from organizational baseline"
         }
     elif score < -0.1:
-        return {
-            "deviation_category": "Baseline Aligned",
-            "baseline_comparison": "aligned",
-            "severity": "none",
-            "description": "Security posture aligns with organizational norms"
-        }
-    elif score < 0.2:
         return {
             "deviation_category": "Moderate Deviation",
             "baseline_comparison": "below_baseline",
             "severity": "moderate",
             "description": "Security posture deviates moderately from baseline"
         }
+    elif score < 0.2:
+        return {
+            "deviation_category": "Baseline Aligned",
+            "baseline_comparison": "aligned",
+            "severity": "none",
+            "description": "Security posture aligns with organizational norms"
+        }
     else:
         return {
-            "deviation_category": "Strong Deviation",
-            "baseline_comparison": "significantly_below",
-            "severity": "high",
-            "description": "Security posture significantly deviates from organizational baseline"
+            "deviation_category": "Hardened",
+            "baseline_comparison": "above_baseline",
+            "severity": "positive",
+            "description": "Security posture exceeds organizational baseline"
         }
 
 

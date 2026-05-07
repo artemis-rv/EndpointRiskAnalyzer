@@ -71,32 +71,81 @@ export default function Guidelines() {
                 </div>
             </div>
 
-            {/* Documentation / PDF Dummy Card */}
+            {/* Documentation / PDF Cards */}
             <div className="space-y-6">
                 <h2 className="text-2xl font-bold border-b border-slate-200 dark:border-slate-700 pb-2">Reference Documents</h2>
                 <Card title="Official Organization CIS Benchmarks">
-                    <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                        <div className="flex flex-row items-center gap-4">
-                            <div className="p-3 bg-red-100 text-red-600 rounded-lg dark:bg-red-900/30 dark:text-red-400">
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                </svg>
+                    <div className="space-y-4">
+
+                        {/* Windows 11 */}
+                        <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div className="flex flex-row items-center gap-4">
+                                <div className="p-3 bg-red-100 text-red-600 rounded-lg dark:bg-red-900/30 dark:text-red-400">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-lg max-w-sm truncate whitespace-nowrap" title="CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf">CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf</h4>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Windows 11 • Last updated: Mar 2026 • 8.0 MB</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="font-semibold text-lg max-w-sm truncate whitespace-nowrap" title="CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf">CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf</h4>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm">Last updated: Mar 2026 • 8.0 MB</p>
+                            <div className="flex gap-3 mt-4 md:mt-0">
+                                <a title="Open in New Tab" href="/CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 flex items-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>
+                                <a title="Download" href="/CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" download="CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" className="px-4 py-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-soft">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </a>
                             </div>
                         </div>
-                        <div className="flex gap-3 mt-4 md:mt-0">
-                            <a title="Open in New Tab" href="/CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 flex items-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold transition-colors">
-                                <svg alt="Open in New Tab" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
 
-                            </a>
-                            <a title="Download" href="/CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" download="CIS_Microsoft_Windows_11_Enterprise_Benchmark_v5.0.0.pdf" className="px-4 py-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-soft">
-                                <svg alt="Download" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-
-                            </a>
+                        {/* Ubuntu 24.04 LTS */}
+                        <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div className="flex flex-row items-center gap-4">
+                                <div className="p-3 bg-orange-100 text-orange-600 rounded-lg dark:bg-orange-900/30 dark:text-orange-400">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-lg max-w-sm truncate whitespace-nowrap" title="CIS_Ubuntu_Linux_24.04_LTS_Benchmark_v1.0.0.pdf">CIS_Ubuntu_Linux_24.04_LTS_Benchmark_v1.0.0.pdf</h4>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Ubuntu 24.04 LTS • v1.0.0 • 10.4 MB</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 mt-4 md:mt-0">
+                                <a title="Open in New Tab" href="/CIS_Ubuntu_Linux_24.04_LTS_Benchmark_v1.0.0.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 flex items-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>
+                                <a title="Download" href="/CIS_Ubuntu_Linux_24.04_LTS_Benchmark_v1.0.0.pdf" download="CIS_Ubuntu_Linux_24.04_LTS_Benchmark_v1.0.0.pdf" className="px-4 py-2 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-soft">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </a>
+                            </div>
                         </div>
+
+                        {/* Ubuntu 12.04 Archive */}
+                        <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div className="flex flex-row items-center gap-4">
+                                <div className="p-3 bg-slate-100 text-slate-500 rounded-lg dark:bg-slate-800 dark:text-slate-400">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-lg max-w-sm truncate whitespace-nowrap" title="CIS_Ubuntu_12.04_LTS_Server_Benchmark_v1.1.0 _ARCHIVE.pdf">CIS_Ubuntu_12.04_LTS_Server_Benchmark_v1.1.0_ARCHIVE.pdf</h4>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm">Ubuntu 12.04 LTS (Archive) • v1.1.0 • 2.0 MB</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 mt-4 md:mt-0">
+                                <a title="Open in New Tab" href="/CIS_Ubuntu_12.04_LTS_Server_Benchmark_v1.1.0 _ARCHIVE.pdf" target="_blank" rel="noopener noreferrer" className="px-4 py-2 flex items-center gap-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>
+                                <a title="Download" href="/CIS_Ubuntu_12.04_LTS_Server_Benchmark_v1.1.0 _ARCHIVE.pdf" download="CIS_Ubuntu_12.04_LTS_Server_Benchmark_v1.1.0_ARCHIVE.pdf" className="px-4 py-2 flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-soft">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </a>
+                            </div>
+                        </div>
+
                     </div>
                 </Card>
             </div>

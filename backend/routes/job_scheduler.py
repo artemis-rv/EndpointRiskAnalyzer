@@ -15,26 +15,43 @@ logger = logging.getLogger(__name__)
 @router.get("")
 def list_jobs():
     """
-    Returns all jobs (pending and completed) from agent_jobs, newest first.
+    Returns active and recent jobs from agent_jobs, newest first.
+    - Marks stale pending/disconnected jobs as 'expired'.
+    - Permanently deletes completed/expired jobs older than 2 hours.
+    - Only returns jobs created within the last 24 hours that are still relevant.
     """
-    # Auto-cleanup expired jobs first
     now = datetime.now(timezone.utc)
+    cutoff_expire = now  # anything past expires_at becomes expired
+    cutoff_delete = now - timedelta(hours=2)   # completed/expired older than 2h → delete
+    recent_window = now - timedelta(hours=24)  # only show jobs from last 24h
+
+    # 1. Flip stale pending/disconnected → expired
     agent_jobs_collection().update_many(
-        {"status": {"$in": ["pending", "disconnected"]}, "expires_at": {"$lt": now}},
+        {"status": {"$in": ["pending", "disconnected"]}, "expires_at": {"$lt": cutoff_expire}},
         {"$set": {"status": "expired", "expired_at": now}}
     )
 
+    # 2. Permanently delete old completed/expired jobs (keep DB clean)
+    agent_jobs_collection().delete_many(
+        {
+            "status": {"$in": ["completed", "expired"]},
+            "created_at": {"$lt": cutoff_delete}
+        }
+    )
+
+    # 3. Fetch only recent jobs (last 24 hours)
     try:
-        cursor = agent_jobs_collection().find()
+        cursor = agent_jobs_collection().find({"created_at": {"$gte": recent_window}})
         jobs = list(cursor.sort("created_at", -1))
     except Exception:
         jobs = []
+
     out = []
     for j in jobs:
         eid = j.get("endpoint_id")
         if not j.get("job_id"):
             continue
-        
+
         # Look up hostname and active status
         hostname = "—"
         agent_active = False
@@ -63,11 +80,21 @@ async def schedule_scan_all():
     Schedule RUN_SCAN job for all registered endpoints.
     Run the agent first so it registers an endpoint; then this creates jobs for each.
     """
-    # Auto-cleanup expired jobs first
     now = datetime.now(timezone.utc)
+    cutoff_delete = now - timedelta(hours=2)
+
+    # 1. Flip stale pending/disconnected → expired
     agent_jobs_collection().update_many(
         {"status": {"$in": ["pending", "disconnected"]}, "expires_at": {"$lt": now}},
         {"$set": {"status": "expired", "expired_at": now}}
+    )
+
+    # 2. Purge old completed/expired records so DB stays clean
+    agent_jobs_collection().delete_many(
+        {
+            "status": {"$in": ["completed", "expired"]},
+            "created_at": {"$lt": cutoff_delete}
+        }
     )
 
     try:
@@ -88,26 +115,31 @@ async def schedule_scan_all():
 
     count = 0
     now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(minutes=2)
-    
+
     for ep in endpoints:
         eid = ep.get("endpoint_id") or ep.get("_id")
         if eid is None:
             continue
-            
+
         # Determine initial status based on agent activity
-        status = "pending" if is_agent_active(ep.get("last_seen"), threshold_seconds=60) else "disconnected"
-        # Check if there is already a pending job for this endpoint to avoid duplicates
+        agent_online = is_agent_active(ep.get("last_seen"), threshold_seconds=60)
+        status = "pending" if agent_online else "disconnected"
+
+        # Skip if a live non-expired job already exists for this endpoint
         existing_job = agent_jobs_collection().find_one({
             "endpoint_id": str(eid),
             "status": {"$in": ["pending", "disconnected"]},
             "expires_at": {"$gt": now}
         })
-        
+
         if existing_job:
             continue
-            
-        expires_at = now + timedelta(minutes=2) if status == "pending" else now + timedelta(seconds=6)
+
+        # Online agents: expire after 2 min (agent picks up quickly).
+        # Offline agents: expire after 30 min so the admin can see the
+        # PENDING (OFFLINE) state for a meaningful window before it
+        # transitions to expired and gets cleaned up.
+        expires_at = now + timedelta(minutes=2) if agent_online else now + timedelta(minutes=30)
 
         try:
             job_id = str(uuid.uuid4())
@@ -122,7 +154,7 @@ async def schedule_scan_all():
             })
             count += 1
             logger.info(f"Created job {job_id} for endpoint {eid} with status '{status}'")
-            
+
             # Broadcast the job_created event
             await manager.broadcast({
                 "type": "job_created",
@@ -130,7 +162,7 @@ async def schedule_scan_all():
                 "endpoint_id": str(eid),
                 "status": status
             })
-            
+
         except Exception as e:
             logger.error(f"Failed to create job for endpoint {eid}: {str(e)}")
             continue
@@ -138,5 +170,9 @@ async def schedule_scan_all():
     return {
         "status": "scheduled",
         "jobs_created": count,
-        "message": f"Scheduled {count} job(s) for {len(endpoints)} endpoint(s)." if count else "No endpoints registered. Run the agent first so it registers, then try Scan All again."
+        "message": (
+            f"Scheduled {count} job(s) for {len(endpoints)} endpoint(s)."
+            if count
+            else "No endpoints registered. Run the agent first so it registers, then try Scan All again."
+        )
     }
