@@ -41,7 +41,7 @@ def get_scans_for_endpoint(endpoint_id: str):
             "scan_id": str(scan["_id"]),
             "scan_time": scan.get("scan_time"),
             "scan_data": scan.get("scan_data"),
-            "ml_assessment": predict_risk(scan.get("scan_data", {}))
+            "ml_assessment": predict_risk(scan.get("scan_data") or {})
         })
 
     return {

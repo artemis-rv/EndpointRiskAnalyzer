@@ -24,7 +24,7 @@ export default function EndpointDetail({ endpoint }) {
         });
 
       setLoadingDetails(true);
-      const baseUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+      const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
       fetch(`${baseUrl}/api/endpoints/${endpoint.endpoint_id}`)
         .then(res => res.json())
         .then(data => {

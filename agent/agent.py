@@ -110,11 +110,11 @@ from datetime import timezone
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file if it exists
-load_dotenv()
+# Load environment variables from agent_config/.env file if it exists
+config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_config", ".env")
+load_dotenv(config_path)
 
-# BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 print(f"[*] Target Backend: {BACKEND_URL}")
 
 SCANS_URL = f"{BACKEND_URL}/api/scans/"

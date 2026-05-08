@@ -1,11 +1,6 @@
-// only 1 update to do instead of all files
-
-// const BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = process.env.REACT_APP_API_URL || window.location.origin;
 
 export async function getEndpoints() {
-  // always include trailing slash to avoid FastAPI 307 redirect that trips up
-  // the CRA proxy in development (redirect caused full-page refreshes)
   const res = await fetch(`${BASE_URL}/api/endpoints/`);
   return res.json();
 }
