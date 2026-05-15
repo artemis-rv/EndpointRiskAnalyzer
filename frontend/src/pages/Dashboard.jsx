@@ -74,7 +74,8 @@ export default function Dashboard() {
     loadInterpretation();
 
     // Establish WebSocket connection
-    const wsUrl = process.env.REACT_APP_WS_URL || "ws://127.0.0.1:8000/wss/dashboard";
+    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = process.env.REACT_APP_WS_URL || `${wsProtocol}//${window.location.host}/wss/dashboard`;
     // We need an api_key to connect, for the dashboard we might need a dedicated token 
     // or we can bypass token check in local, but let's assume we have a way.
     // Wait, websockets.py requires `token` query param. The dashboard doesn't have an auth token yet.
@@ -215,10 +216,10 @@ export default function Dashboard() {
             onClick={handleTriggerAnalysis}
             disabled={analysisStatus === "running"}
             className={`group px-5 py-2.5 rounded-xl text-white text-sm font-black shadow-lg transition-all flex items-center gap-2 ${analysisStatus === "running"
-                ? "bg-amber-500 shadow-amber-200 dark:shadow-amber-900/40 cursor-not-allowed opacity-90"
-                : analysisStatus === "done"
-                  ? "bg-green-600 shadow-green-200 dark:shadow-green-900/40 hover:bg-green-700 active:scale-95"
-                  : "bg-indigo-600 shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl dark:hover:shadow-indigo-900/60 active:scale-95"
+              ? "bg-amber-500 shadow-amber-200 dark:shadow-amber-900/40 cursor-not-allowed opacity-90"
+              : analysisStatus === "done"
+                ? "bg-green-600 shadow-green-200 dark:shadow-green-900/40 hover:bg-green-700 active:scale-95"
+                : "bg-indigo-600 shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl dark:hover:shadow-indigo-900/60 active:scale-95"
               }`}
           >
             {analysisStatus === "running" && (
