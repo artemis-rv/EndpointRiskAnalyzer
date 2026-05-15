@@ -103,6 +103,8 @@ def run_agent() -> dict:
 
 
 import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import time
 import hmac
 import hashlib
@@ -114,10 +116,13 @@ from dotenv import load_dotenv
 config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_config", ".env")
 load_dotenv(config_path)
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://127.0.0.1")
 print(f"[*] Target Backend: {BACKEND_URL}")
 
 SCANS_URL = f"{BACKEND_URL}/api/scans/"
+
+# Path to the pinned self-signed certificate for secure local communication
+CERT_PATH = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "infra", "certs", "dev.crt"))
 
 
 def get_auth_headers():
@@ -154,7 +159,8 @@ def send_scan_to_backend(scan_data: dict, endpoint_id: str):
             SCANS_URL,
             json=payload,
             headers=headers,
-            timeout=10
+            timeout=10,
+            verify=CERT_PATH
         )
 
         if response.status_code == 200:
@@ -176,7 +182,8 @@ def poll_and_heartbeat():
         response = requests.post(
             f"{BACKEND_URL}/api/agent/poll",
             headers=headers,
-            timeout=5
+            timeout=5,
+            verify=CERT_PATH
         )
         return response.json()
     except Exception:
@@ -189,7 +196,8 @@ def mark_job_complete(job_id):
         requests.post(
             f"{BACKEND_URL}/api/agent/jobs/{job_id}/complete",
             headers=headers,
-            timeout=5   
+            timeout=5,
+            verify=CERT_PATH
         )
     except Exception:
         pass
@@ -235,8 +243,8 @@ def register_agent(endpoint_id: str):
         r = requests.post(
             f"{BACKEND_URL}/api/agent/register",
             json=payload,
-            timeout=5
-            
+            timeout=5,
+            verify=CERT_PATH
         )
         data = r.json() if r.text else {}
         if data.get("status") == "registered":
@@ -260,7 +268,8 @@ def send_heartbeat(endpoint_id):
         requests.post(
             f"{BACKEND_URL}/api/agent/heartbeat/{endpoint_id}",
             headers=headers,
-            timeout=3
+            timeout=3,
+            verify=CERT_PATH
         )
     except Exception:
         pass
