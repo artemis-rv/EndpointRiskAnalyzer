@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getEndpoints,
   triggerAnalysis,
@@ -8,8 +8,10 @@ import {
 } from "../api/api";
 import Interpretation from "../components/Interpretation";
 import { formatDateTimeIST } from "../utils/dateUtils";
+import { useNotification } from "../context/NotificationContext";
 
 export default function Dashboard() {
+  const { showNotification } = useNotification();
   const [summaryData, setSummaryData] = useState(null);
   const [endpoints, setEndpoints] = useState([]);
   const [loadingEndpoints, setLoadingEndpoints] = useState(true);
@@ -124,6 +126,7 @@ export default function Dashboard() {
       }, 5000);
     } catch (error) {
       console.error("Analysis trigger failed", error);
+      showNotification(error.message || "Failed to run analysis. Make sure you have completed a scan.", "error");
       setAnalysisStatus("idle");
     }
   };

@@ -1,49 +1,32 @@
 <div align="center">
 
-  <!-- <picture>
-    <img src="header.svg" width="100%" alt="Risk Intel Banner" />
-  </picture> -->
-  # Risk Intel <br> 
-  ### EndpointRiskAnalyzer
+  # 🛡️ Risk Intel 
+  ### Endpoint Risk Analyzer
 
   <p>
     An intelligent, agent-based platform for evaluating endpoint security posture using CIS benchmarks, ML-assisted risk scoring, and real-time visualization.
   </p>
 
   <p>
-    <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#architecture">Architecture</a> •
-    <a href="#getting-started">Getting Started</a>
+    <a href="#-key-features">Features</a> •
+    <a href="#-architecture">Architecture</a> •
+    <a href="#-security-posture">Security</a> •
+    <a href="#-getting-started">Getting Started</a>
   </p>
 
 </div>
 
 ---
 
-## License
+## 🌟 Key Features
 
-This project is source-available software intended for educational, research, and non-commercial purposes.
-Commercial usage, resale, managed hosting, or redistribution is prohibited without explicit permission.
-See LICENSE and TERMS.md for details.
-
----
-
-<a id="features"></a>
-## ✨ Features
-
-- **Real-Time Visibility:** Background agents provide live endpoint telemetry (OS info, system configurations) directly to the dashboard.
-- **CIS Compliance Benchmarking:** Automatically scans endpoints against CIS (Center for Internet Security) standards to detect vulnerabilities and misconfigurations.
-- **ML-Assisted Risk Analysis:** Evaluates raw system data utilizing Machine Learning to calculate Anomaly Scores and consolidate Organization-Wide Security Posture grades.
-- **Network Auditing:** Identifies high-risk open ports and monitors active network exposures.
-- **Secure Transport Architecture:** 
-  - **HTTPS & WSS:** Fully encrypted API traffic.
-  - **Anti-Replay Protection:** Cryptographic Nonces and Timestamps prevent MITM replay attacks.
-  - **Job Integrity:** HMAC-SHA256 signatures guarantee agents only execute verified server instructions.
+- **Real-Time Visibility:** Background agents (Python) stream live system configuration data, network states, and OS details directly to the central server.
+- **CIS Benchmarking:** Automatically maps endpoint settings against **Center for Internet Security (CIS)** standards to pinpoint misconfigurations and vulnerabilities.
+- **ML Risk Assessment:** Built-in Machine Learning models calculate Anomaly Scores and grade the overall organizational security health based on aggregated endpoint telemetry.
+- **Secure Architecture:** Complete TLS enforcement. All traffic flows through an Nginx reverse proxy using `HTTPS` and `WSS` (Secure WebSockets), with strict agent-side certificate pinning to prevent Man-in-the-Middle (MITM) attacks.
 
 ---
 
-<a id="tech-stack"></a>
 ## 💻 Tech Stack
 
 <div align="center">
@@ -65,9 +48,9 @@ See LICENSE and TERMS.md for details.
         <sub>MongoDB (Atlas / Local)</sub>
       </td>
       <td align="center" width="25%">
-        <strong>Agent</strong><br><br>
-        <img src="https://skillicons.dev/icons?i=windows" alt="Windows" /><br>
-        <sub>Python, Psutil, WMI</sub>
+        <strong>Agent / Infra</strong><br><br>
+        <img src="https://skillicons.dev/icons?i=windows,nginx" alt="Windows & Nginx" /><br>
+        <sub>Python, Psutil, Nginx</sub>
       </td>
     </tr>
   </table>
@@ -75,103 +58,95 @@ See LICENSE and TERMS.md for details.
 
 ---
 
-<a id="architecture"></a>
 ## 🏗️ Architecture
 
-1. **Endpoint Agent:** A lightweight Windows-compatible Python script (`agent.py`) that runs silently on target machines. It establishes an authenticated, encrypted polling cycle with the central server.
-2. **FastAPI Backend:** Orchestrates endpoint registration, job distribution (e.g., initiating scans), database writes to MongoDB, and serves the Machine Learning analysis module.
-3. **React Dashboard:** A premium, real-time UI mapping and WebSockets to display immediate systemic interpretations.
+Risk Intel is built using a modern, decoupled microservices approach:
+
+1. **Agent (`/agent`)**: A lightweight Windows-compatible Python script. It securely polls the backend to receive scan jobs, executes them locally (using `psutil` and `wmi`), and uploads the encrypted results.
+2. **Backend (`/backend`)**: A **FastAPI** application. Orchestrates endpoint registration, manages MongoDB database writes, executes machine learning inference, and handles real-time WebSocket communication.
+3. **Frontend (`/frontend`)**: A premium **React & TailwindCSS** dashboard. Visualizes live organizational security posture, interactive charts, and endpoint-specific metrics.
+4. **Infrastructure (`/infra`)**: An **Nginx** reverse proxy that serves as the entry point, providing SSL/TLS termination, port routing, and HTTP-to-HTTPS redirection.
 
 ---
 
-<a id="getting-started"></a>
+## 🔒 Security Posture
+
+Risk Intel is engineered with a **"Secure-by-Default"** philosophy:
+- **Strict Certificate Pinning**: The agent explicitly verifies the Nginx server's pinned TLS certificate (`verify=CERT_PATH`), immediately dropping any spoofed or MITM connections.
+- **HMAC Signatures**: Server-issued scan jobs are cryptographically signed using HMAC-SHA256, ensuring agents only execute verified server instructions.
+- **HSTS Enforcement**: Browsers and clients are forced to use secure channels, and WebSockets dynamically upgrade to `wss://`.
+
+---
+
 ## 🚀 Getting Started
 
-Follow these steps to deploy Risk Intel on your network.
+Follow these steps to deploy Risk Intel locally or on your internal network.
 
 ### Prerequisites
 - **Python 3.10+** (Added to PATH)
 - **Node.js 18+** & npm
 - A **MongoDB** instance (Local or Atlas cluster)
+- **Nginx** (via WSL, Docker, or native)
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/EndpointRiskAnalyzer.git
-cd EndpointRiskAnalyzer
-```
-
-### 2. Configure Environment Variables
-
-> **⚠️ Security Note:** Do not commit `.env` files. Ensure they remain listed in `.gitignore`.
-
-**Backend (`backend/.env`)**
-Create a `.env` file in the `backend/` directory:
+### 1. Configure the Backend (FastAPI)
+Navigate to the `backend/` directory and create a `.env` file:
 ```env
 # Database
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/?retryWrites=true&w=majority
-DB_NAME=risk_intel_db
+MONGO_URI=mongodb://localhost:27017  # Or your MongoDB Atlas URI
+DB_NAME=org_security_posture_dev
 
-# Security
+# Security & CORS
 ENFORCE_HTTPS=true
-# Comma-separated list of EXACT URLs where the frontend is hosted
-CORS_ORIGINS=http://localhost:3000,http://<YOUR_LAN_IP>:3000
+CORS_ORIGINS=http://localhost:3000,https://localhost
 ```
-
-**Frontend (`frontend/.env`)**
-Create a `.env` file in the `frontend/` directory pointing to your backend:
-```env
-# Point this to your backend IP/Port
-REACT_APP_API_URL=http://<YOUR_LAN_IP>:8000
-REACT_APP_WS_URL=ws://<YOUR_LAN_IP>:8000/wss/dashboard
-```
-
-### 3. Start the Backend
-
-Open a terminal in the project root:
+Install dependencies and run the server:
 ```bash
-# Create and activate a virtual environment
 python -m venv venv
-venv\Scripts\activate   # Windows
-# source venv/bin/activate  # macOS/Linux
+venv\Scripts\activate      # On Windows
+# source venv/bin/activate # On macOS/Linux
 
-# Install requirements
 pip install -r requirements.txt
-
-# Start the FastAPI Server (accessible network-wide)
 python -m uvicorn backend.db.main:app --host 0.0.0.0 --port 8000
 ```
-*(For production HTTPS setup, provide `--ssl-keyfile` and `--ssl-certfile` via uvicorn parameters)*
 
-### 4. Start the Frontend Dashboard
-
-Open a new terminal in the `/frontend` directory:
+### 2. Configure the Frontend (React)
+Navigate to the `frontend/` directory and create a `.env` file:
+```env
+# Point to your Nginx proxy domain/IP
+REACT_APP_API_URL=https://localhost
+REACT_APP_WS_URL=wss://localhost/wss/dashboard
+```
+Install and run the dashboard:
 ```bash
 cd frontend
 npm install
 npm start
 ```
-The application UI will compile and open at `http://localhost:3000`.
+*(Note: Use `$env:HOST="0.0.0.0"; npm start` on Windows if hosting alongside WSL Nginx).*
 
-### 5. Deploy the Endpoint Agent
+### 3. Start Nginx Reverse Proxy (HTTPS)
+Risk Intel requires HTTPS for secure agent communication.
+1. Ensure your SSL certificates (`dev.crt`, `dev.key`) are generated in the `infra/certs/` folder.
+2. Copy or link the Nginx configuration located at `infra/nginx/riskintel.dev.conf` into your Nginx `sites-available` folder.
+3. Restart Nginx (`sudo service nginx restart`).
 
-To monitor a Windows machine, alter the `agent.py` configuration to map to your central analytical server.
-
-1. Open `agent/agent.py`.
-2. Update the `BACKEND_URL` variable exactly:
-   ```python
-   BACKEND_URL = "http://<YOUR_BACKEND_LAN_IP>:8000"
-   ```
-3. Run the agent natively or build it into an executable:
-   ```bash
-   cd agent
-   python agent.py
-   
-   # Optional: Compile to portable .exe
-   # pip install pyinstaller
-   # pyinstaller --onefile --name RiskIntelAgent agent.py
-   ```
-
-You will now see the agent appear actively polling on the frontend Dashboard!
+### 4. Deploy the Agent
+The agent runs directly on the endpoint machine you want to monitor.
+1. Navigate to the `agent/` directory.
+2. In `agent/agent_config/.env`, configure the backend URL to point to your Nginx proxy:
+```env
+BACKEND_URL=https://localhost
+```
+3. Run the agent:
+```bash
+python agent.py
+```
+*The agent will establish a secure handshake, register itself, and await scan jobs from your React dashboard!*
 
 ---
 
+## 📄 License & Terms
+
+This project is source-available software intended for educational, research, and non-commercial purposes.
+Commercial usage, resale, managed hosting, or redistribution is prohibited without explicit permission.
+See `LICENSE` and `TERMS.md` for details.

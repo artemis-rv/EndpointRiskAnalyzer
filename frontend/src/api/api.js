@@ -17,6 +17,10 @@ export async function getEndpoint(endpointId) {
 
 export async function triggerAnalysis() {
   const res = await fetch(`${BASE_URL}/api/analyze`, { method: "POST" });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Analysis failed");
+  }
   return res.json();
 }
 

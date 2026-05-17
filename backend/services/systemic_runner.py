@@ -124,7 +124,9 @@ def run_and_store_systemic_analysis():
     try:
         from backend.services.interpretation_runner import run_and_store_interpretation
         run_and_store_interpretation(snapshot_id)
-    except Exception:
-        pass  # Don't fail systemic analysis if interpretation fails
+    except Exception as e:
+        import traceback
+        print(f"[-] Interpretation failed in systemic_runner: {e}")
+        traceback.print_exc()
 
     return snapshot_id
