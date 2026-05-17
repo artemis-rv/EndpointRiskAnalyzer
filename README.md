@@ -93,7 +93,7 @@ Navigate to the `backend/` directory and create a `.env` file:
 ```env
 # Database
 MONGO_URI=mongodb://localhost:27017  # Or your MongoDB Atlas URI
-DB_NAME=org_security_posture_dev
+DB_NAME=db_name
 
 # Security & CORS
 ENFORCE_HTTPS=true
