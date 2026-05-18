@@ -233,6 +233,11 @@ def agent_main_loop(endpoint_id: str, hostname: str):
 
 
 def register_agent(endpoint_id: str):
+    enrollment_token = os.getenv("ENROLLMENT_TOKEN")
+    if not enrollment_token:
+        print("[-] Enrollment token not set")
+        return
+    
     payload = {
         "endpoint_id": endpoint_id,
         "hostname": socket.gethostname(),
@@ -240,16 +245,18 @@ def register_agent(endpoint_id: str):
     }
 
     try:
-        r = requests.post(
-            f"{BACKEND_URL}/api/agent/register",
-            json=payload,
-            timeout=5,
-            verify=CERT_PATH
-        )
+        r = requests.post(f"{BACKEND_URL}/api/agent/register", json=payload, headers={"X-Enrollment-Token": enrollment_token}, timeout=5, verify=CERT_PATH)
         data = r.json() if r.text else {}
-        if data.get("status") == "registered":
+        
+        if r.status_code == 409:
+            print("[*] Endpoint already registered")
+            if not get_api_key():
+                print("[-] No cached API key found")
+            return
+            
+        if data.get("status") == "success":
             print("[+] Agent registered with backend")
-            api_key = data.get("api_key")
+            api_key=data.get("api_key")
             if api_key:
                 try:
                     with open(API_KEY_FILE, "w", encoding="utf-8") as f:
@@ -257,9 +264,10 @@ def register_agent(endpoint_id: str):
                 except Exception as e:
                     print("[-] Failed to save API key locally:", e)
         else:
-            print("[-] Agent registration failed:", data.get("message", r.text or r.status_code))
+            print("[-] Agent registration failed:", data.get("detail", r.text or r.status_code))
     except Exception as e:
         print("[-] Agent registration failed:", e)
+
 
 def send_heartbeat(endpoint_id):
     # Backward compatibility stub. Main loop now uses poll_and_heartbeat.
