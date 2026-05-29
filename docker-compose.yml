@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+
+    container_name: riskintel-backend
+
+    # ports:
+    #   - "8000:8000"
+
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+      - DB_NAME=org_security_posture_prod
+      - ENROLLMENT_TOKEN=66135d6d802b593ac89382538fa9a2974b15aa7eb582db98c7b2ea21c906c4b6
+      - CORS_ORIGINS=https://localhost,https://localhost:3000,https://127.0.0.1,https://127.0.0.1:3000
+
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:7
+
+    container_name: riskintel-mongodb
+
+    ports:
+      - "127.0.0.1:27018:27017"
+
+    volumes:
+      - mongodb_data:/data/db
+
+  nginx:
+    build:
+      context: .
+      dockerfile: infra/nginx/Dockerfile
+
+    container_name: riskintel-nginx
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./frontend/build:/usr/share/nginx/html
+
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:

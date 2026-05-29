@@ -16,4 +16,10 @@ numpy
 pandas
 pymongo
 pydantic
+python-multipart
+python-dotenv
+slowapi
+reportlab
 scikit-learn
+bleach
+websockets
