@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+venv/
+.venv/
+.git/
+.gitignore
+tests/
+logs/
+*.log
+cert.pem
+key.pem
+node_modules/
