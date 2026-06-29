@@ -12,8 +12,8 @@ services:
     environment:
       - MONGO_URI=mongodb://mongodb:27017/
       - DB_NAME=org_security_posture_prod
-      - ENROLLMENT_TOKEN=66135d6d802b593ac89382538fa9a2974b15aa7eb582db98c7b2ea21c906c4b6
-      - CORS_ORIGINS=https://localhost,https://localhost:3000,https://127.0.0.1,https://127.0.0.1:3000
+      - ENROLLMENT_TOKEN=${ENROLLMENT_TOKEN}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://localhost,https://localhost:3000,https://127.0.0.1,https://127.0.0.1:3000}
 
     depends_on:
       - mongodb
@@ -46,5 +46,20 @@ services:
     depends_on:
       - backend
 
+  postgres:
+    image: postgres:17
+
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   mongodb_data:
+  postgres_data:

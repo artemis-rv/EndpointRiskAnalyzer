@@ -46,6 +46,8 @@ coverage.xml
 # -----------------------------------------------------------------------------
 .env
 .env.*
+*.db
+*.sqlite3
 !.env.example          # keep the example template
 
 # Agent identity & auth tokens

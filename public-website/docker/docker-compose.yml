@@ -1,0 +1,154 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# RiskIntel Public Website — Docker Compose
+# Orchestrates: FastAPI backend, PostgreSQL 17, Redis 7
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  website-postgres:
+    image: postgres:17-alpine
+    container_name: riskintel-website-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-riskintel_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-riskintel_public}
+
+    volumes:
+      - website_postgres_data:/var/lib/postgresql/data
+
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-riskintel_user} -d ${POSTGRES_DB:-riskintel_public}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - website-internal
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  website-redis:
+    image: redis:7-alpine
+    container_name: riskintel-website-redis
+    restart: unless-stopped
+
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-CHANGE_ME_REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
+
+    volumes:
+      - website_redis_data:/data
+
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6380}:6379"
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-CHANGE_ME_REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+    networks:
+      - website-internal
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  website-backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      target: runtime
+
+    container_name: riskintel-website-backend
+    restart: unless-stopped
+
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      DEBUG: "false"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-riskintel_user}:${POSTGRES_PASSWORD}@website-postgres:5432/${POSTGRES_DB:-riskintel_public}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS_PASSWORD}@website-redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://riskintel.example.com}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-RiskIntel}
+      RELEASE_FILES_BASE_PATH: /data/releases
+      MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE:-1048576}
+
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+
+    volumes:
+      - release_files:/data/releases:ro
+
+    depends_on:
+      website-postgres:
+        condition: service_healthy
+      website-redis:
+        condition: service_healthy
+
+    networks:
+      - website-internal
+      - website-external
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
+
+  # ── Alembic Migration Runner (init container pattern) ─────────────────────
+  website-migrate:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      target: runtime
+
+    container_name: riskintel-website-migrate
+    restart: "no"
+
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-riskintel_user}:${POSTGRES_PASSWORD}@website-postgres:5432/${POSTGRES_DB:-riskintel_public}
+
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+
+    depends_on:
+      website-postgres:
+        condition: service_healthy
+
+    networks:
+      - website-internal
+
+
+volumes:
+  website_postgres_data:
+  website_redis_data:
+  release_files:
+
+networks:
+  website-internal:
+    driver: bridge
+    internal: true
+  website-external:
+    driver: bridge

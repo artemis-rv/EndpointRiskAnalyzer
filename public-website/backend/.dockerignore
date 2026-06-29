@@ -1,0 +1,28 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Docker ignore file
+# ═══════════════════════════════════════════════════════════════════════════════
+
+.git
+.gitignore
+.dockerignore
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.pyo
+venv/
+.venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/

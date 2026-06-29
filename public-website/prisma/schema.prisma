@@ -1,0 +1,198 @@
+datasource db {
+  provider = "postgresql"
+  url= env("DB_URL")
+}
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+model User {
+  user_id            String    @id @default(uuid()) @db.Uuid
+
+  first_name         String
+  last_name          String
+
+  email              String    @unique
+  password_hash      String
+
+  country_code       String
+  company_name       String?
+
+  role               UserRole  @default(USER)
+
+  email_verified     Boolean   @default(false)
+  email_verified_at  DateTime?
+
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  last_login_at      DateTime?
+
+  is_active          Boolean   @default(true)
+
+  published_releases Release[]
+  downloads          Download[]
+  feedbacks          Feedback[]
+  contact_requests   ContactRequest[] @relation("RequestOwner")
+  handled_requests   ContactRequest[] @relation("RequestHandler")
+}
+
+model Release {
+  release_id            String        @id @default(uuid()) @db.Uuid
+
+  version               String        @unique
+
+  title                 String
+  description           String?
+
+  release_notes         String
+
+  file_path             String
+  file_size             BigInt
+
+  sha256_checksum       String
+
+  published_by_user_id  String        @db.Uuid
+
+  published_by User @relation(fields: [published_by_user_id], references: [user_id])
+
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+
+  published_at          DateTime?
+
+  is_latest             Boolean       @default(false)
+
+  release_status        ReleaseStatus @default(DRAFT)
+  downloads             Download[]
+}
+
+model Download {
+
+  download_id      String   @id @default(uuid()) @db.Uuid
+
+  user_id          String   @db.Uuid
+  release_id       String   @db.Uuid
+
+  downloaded_at    DateTime @default(now())
+
+  ip_address       String?
+  user_agent       String?
+
+  download_source  String
+
+  user             User     @relation(fields: [user_id], references: [user_id])
+  release          Release  @relation(fields: [release_id], references: [release_id])
+
+  @@index([user_id])
+  @@index([release_id])
+  @@index([downloaded_at])
+}
+
+
+model Feedback {
+
+  feedback_id      String           @id @default(uuid()) @db.Uuid
+
+  user_id          String           @db.Uuid
+
+  type             FeedbackType
+
+  title            String
+  description      String
+
+  rating           Int?
+
+  status           FeedbackStatus   @default(NEW)
+
+  featured         Boolean          @default(false)
+
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+
+  resolved_at      DateTime?
+
+  user             User             @relation(fields: [user_id], references: [user_id])
+
+  @@index([user_id])
+  @@index([status])
+  @@index([featured])
+}
+
+
+model ContactRequest {
+
+  contact_request_id String          @id @default(uuid()) @db.Uuid
+
+  user_id            String          @db.Uuid
+
+  subject            String
+  message            String
+
+  category           ContactCategory
+
+  status             ContactStatus   @default(NEW)
+
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+
+  closed_at          DateTime?
+
+  handled_by_user_id String?         @db.Uuid
+
+  user               User            @relation("RequestOwner", fields: [user_id], references: [user_id])
+
+  handled_by         User?           @relation("RequestHandler", fields: [handled_by_user_id], references: [user_id])
+
+  @@index([user_id])
+  @@index([status])
+  @@index([handled_by_user_id])
+}
+
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ReleaseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum FeedbackType {
+  RATING
+  BUG
+  FEATURE_REQUEST
+  TESTIMONIAL
+  GENERAL
+}
+
+enum FeedbackStatus {
+  NEW
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  RESOLVED
+}
+
+enum ContactCategory {
+  SALES
+  SUPPORT
+  BUG
+  FEATURE_REQUEST
+  PARTNERSHIP
+  GENERAL
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  RESPONDED
+  CLOSED
+}
+
+
