@@ -88,10 +88,15 @@ def create_application() -> FastAPI:
     )
 
     # 3. CORS
+    # FINDING-VA-006 (INFO): allow_credentials=True is ONLY safe when origins
+    # are an explicit allowlist — never when "*" is present. If a wildcard were
+    # ever added, the combination would allow any site to make credentialed
+    # cross-origin requests (data-theft primitive). Guard below enforces this.
+    _allow_credentials = "*" not in settings.CORS_ORIGINS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
-        allow_credentials=True,
+        allow_credentials=_allow_credentials,
         allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
         expose_headers=["X-Request-ID", "X-Correlation-ID"],

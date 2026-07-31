@@ -50,10 +50,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # ── Content Security Policy ────────────────────────────────────────
         # Restrictive CSP for a pure API — no inline scripts/styles needed
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'none'; "
-            "frame-ancestors 'none';"
-        )
+        if not request.url.path.startswith(("/docs", "/redoc", "/openapi.json")):
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'none'; "
+                "frame-ancestors 'none';"
+            )
 
         # ── Permissions Policy ────────────────────────────────────────────
         response.headers["Permissions-Policy"] = (
@@ -67,7 +68,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["Pragma"] = "no-cache"
 
         # ── Remove server information ─────────────────────────────────────
-        response.headers.pop("server", None)
-        response.headers.pop("x-powered-by", None)
+        if "server" in response.headers:
+            del response.headers["server"]
+        if "x-powered-by" in response.headers:
+            del response.headers["x-powered-by"]
 
         return response

@@ -9,7 +9,6 @@ All endpoints follow OWASP ASVS:
 - Tokens never included in logs
 """
 
-from __future__ import annotations
 
 from typing import Optional
 

@@ -236,7 +236,12 @@ class AuthService:
         """Mark email as verified if token is valid."""
         from fastapi import HTTPException
 
-        user = await self._user_repo.get_by_id(uuid.UUID(user_id))
+        try:
+            parsed_uuid = uuid.UUID(user_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user ID format.")
+
+        user = await self._user_repo.get_by_id(parsed_uuid)
         if not user:
             raise HTTPException(status_code=404, detail="User not found.")
 
@@ -293,7 +298,12 @@ class AuthService:
         """Complete password reset with a valid token."""
         from fastapi import HTTPException
 
-        user = await self._user_repo.get_by_id(uuid.UUID(request.user_id))
+        try:
+            parsed_uuid = uuid.UUID(request.user_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid reset request format.")
+
+        user = await self._user_repo.get_by_id(parsed_uuid)
         if not user:
             raise HTTPException(status_code=400, detail="Invalid reset request.")
 

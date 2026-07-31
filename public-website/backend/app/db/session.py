@@ -30,9 +30,16 @@ engine = create_async_engine(
     echo=settings.DEBUG,          # Log SQL only in debug mode (never in prod)
     pool_size=10,
     max_overflow=20,
-    pool_timeout=30,
+    pool_timeout=10,              # Fail-fast: don't queue longer than 10s for a pool slot
     pool_recycle=1800,            # Recycle connections every 30 min
     pool_pre_ping=True,           # Verify connection health before use
+    # FINDING-VA-002 (HIGH): Cap how long asyncpg blocks the event loop
+    # waiting for a TCP handshake or a slow query response.
+    # Without these, a dead/slow DB freezes the entire async event loop.
+    connect_args={
+        "timeout": 5,            # TCP connect + PostgreSQL handshake must complete within 5s
+        "command_timeout": 10,   # Any individual query must complete within 10s
+    },
 )
 
 # ── Session Factory ───────────────────────────────────────────────────────────

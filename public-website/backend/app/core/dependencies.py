@@ -26,13 +26,20 @@ from app.db.session import get_db
 from app.models.user import User, UserRole
 from app.repositories.user_repo import UserRepository
 
-_bearer = HTTPBearer(auto_error=True)
+_bearer = HTTPBearer(auto_error=False)
 
 _ROLE_HIERARCHY: dict[UserRole, int] = {
     UserRole.USER: 0,
     UserRole.ADMIN: 1,
     UserRole.SUPER_ADMIN: 2,
 }
+
+# Shared 401 for all authentication failures — consistent message prevents enumeration
+_AUTH_REQUIRED = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Authentication required.",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 
 async def get_current_user(
@@ -41,8 +48,13 @@ async def get_current_user(
 ) -> User:
     """
     Validate the Bearer JWT and return the authenticated User model.
-    Raises 401 on any authentication failure.
+    Raises 401 on any authentication failure — including a missing token.
+    (FINDING-VA-003 — LOW: missing token must return 401, not 403)
     """
+    # Missing token: HTTPBearer with auto_error=False returns None
+    if not credentials:
+        raise _AUTH_REQUIRED
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials.",

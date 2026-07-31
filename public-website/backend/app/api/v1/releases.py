@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -30,8 +31,16 @@ async def list_releases(
     page_size: int = Query(default=20, ge=1, le=100, description="Items per page"),
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedResponse[ReleasePublicResponse]:
-    service = ReleaseService(db)
-    return await service.list_published(page=page, page_size=page_size)
+    # FINDING-RE-001 (INFO): Wrap DB call to return 503 instead of unhandled 500
+    # when the data layer is unavailable (e.g., missing DB enum type, connection loss).
+    try:
+        service = ReleaseService(db)
+        return await service.list_published(page=page, page_size=page_size)
+    except SQLAlchemyError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Releases data is temporarily unavailable. Please try again later.",
+        )
 
 
 @router.get(
