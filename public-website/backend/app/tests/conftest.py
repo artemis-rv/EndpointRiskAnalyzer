@@ -54,10 +54,26 @@ async def setup_database():
 
 @pytest_asyncio.fixture()
 async def db(setup_database) -> AsyncGenerator[AsyncSession, None]:
-    """Provide a clean session per test. Rolls back after each test."""
+    """
+    A genuinely clean database per test.
+
+    The helper fixtures below (regular_user, admin_user, ...) call commit(), and
+    a commit cannot be undone by a rollback. With a session-scoped in-memory
+    database that meant rows accumulated across tests, so the second test to
+    ask for `regular_user` hit "UNIQUE constraint failed: User.email" and
+    everything downstream of it errored during setup.
+
+    Every table is therefore emptied after each test. Deletion runs in reverse
+    metadata order so child rows go before the parents they reference.
+    """
     async with TestSessionFactory() as session:
-        yield session
-        await session.rollback()
+        try:
+            yield session
+        finally:
+            await session.rollback()
+            for table in reversed(Base.metadata.sorted_tables):
+                await session.execute(table.delete())
+            await session.commit()
 
 
 @pytest_asyncio.fixture()
@@ -147,3 +163,25 @@ def get_auth_headers(user: User) -> dict:
         subject=str(user.user_id), role=user.role.value
     )
     return {"Authorization": f"Bearer {token}"}
+
+
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+@pytest.fixture(autouse=True)
+def _disable_rate_limiting():
+    """
+    Turn the limiter off for functional tests.
+
+    The limiter counts per client IP, and every test shares the same one, so
+    counters accumulate across a run: a test asserting a 200 fails with 429
+    purely because of what ran before it. That makes failures depend on test
+    order, which is worse than useless.
+
+    The limiter is not left untested — `TestRateLimiting` re-enables it and
+    asserts it actually refuses.
+    """
+    from app.middleware.rate_limit import limiter
+
+    previously_enabled = limiter.enabled
+    limiter.enabled = False
+    yield
+    limiter.enabled = previously_enabled

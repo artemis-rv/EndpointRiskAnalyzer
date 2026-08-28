@@ -54,3 +54,24 @@ class AdminUpdateFeedbackRequest(BaseModel):
     featured: Optional[bool] = None
 
     # Valid status transitions enforced in the service layer
+
+
+class PublicTestimonialResponse(BaseModel):
+    """
+    An approved testimonial, as shown to anonymous visitors.
+
+    Carries no identifier of any kind — not the user id, not the feedback id,
+    and no name. Someone submitting feedback consented to it being read by the
+    team, and an admin approving it consented to the *content* being shown. That
+    is not the same as consenting to be named in public, and this schema cannot
+    accidentally grant the second when only the first was given.
+
+    Attribution would need an explicit opt-in captured at submission time.
+    """
+    model_config = ConfigDict(from_attributes=True)
+
+    type: FeedbackType
+    title: str
+    description: str
+    rating: Optional[int]
+    created_at: datetime

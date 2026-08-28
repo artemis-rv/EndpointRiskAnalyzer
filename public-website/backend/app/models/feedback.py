@@ -64,7 +64,7 @@ class Feedback(Base):
     )
 
     type: Mapped[FeedbackType] = mapped_column(
-        Enum(FeedbackType, name="feedbacktype", create_type=True),
+        Enum(FeedbackType, name="FeedbackType", create_type=False),
         nullable=False,
     )
 
@@ -74,7 +74,7 @@ class Feedback(Base):
     rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     status: Mapped[FeedbackStatus] = mapped_column(
-        Enum(FeedbackStatus, name="feedbackstatus", create_type=True),
+        Enum(FeedbackStatus, name="FeedbackStatus", create_type=False),
         nullable=False,
         default=FeedbackStatus.NEW,
         server_default="NEW",
@@ -92,7 +92,15 @@ class Feedback(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
+        # Prisma owns this schema, and Prisma implements `@updatedAt` in its
+        # client rather than as a database default — so the column is NOT NULL
+        # with nothing to fall back on. A `server_default` here described a
+        # default the database does not have, and every INSERT that omitted the
+        # value failed with a not-null violation.
+        #
+        # `default=` is client-side: SQLAlchemy emits now() as part of the
+        # INSERT, which is the same contract Prisma's client provides.
+        default=func.now(),
         onupdate=func.now(),
     )
 

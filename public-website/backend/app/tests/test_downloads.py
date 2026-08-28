@@ -73,7 +73,7 @@ class TestDownloads:
             "/api/v1/downloads",
             json={"release_id": str(release.release_id)},
         )
-        assert response.status_code == 403
+        assert response.status_code == 401  # no credential supplied -> 401 (RFC 7235)
 
     async def test_download_nonexistent_release(
         self, client: AsyncClient, regular_user

@@ -57,12 +57,12 @@ class ContactRequest(Base):
     message: Mapped[str] = mapped_column(Text, nullable=False)
 
     category: Mapped[ContactCategory] = mapped_column(
-        Enum(ContactCategory, name="contactcategory", create_type=True),
+        Enum(ContactCategory, name="ContactCategory", create_type=False),
         nullable=False,
     )
 
     status: Mapped[ContactStatus] = mapped_column(
-        Enum(ContactStatus, name="contactstatus", create_type=True),
+        Enum(ContactStatus, name="ContactStatus", create_type=False),
         nullable=False,
         default=ContactStatus.NEW,
         server_default="NEW",
@@ -76,7 +76,15 @@ class ContactRequest(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
+        # Prisma owns this schema, and Prisma implements `@updatedAt` in its
+        # client rather than as a database default — so the column is NOT NULL
+        # with nothing to fall back on. A `server_default` here described a
+        # default the database does not have, and every INSERT that omitted the
+        # value failed with a not-null violation.
+        #
+        # `default=` is client-side: SQLAlchemy emits now() as part of the
+        # INSERT, which is the same contract Prisma's client provides.
+        default=func.now(),
         onupdate=func.now(),
     )
 

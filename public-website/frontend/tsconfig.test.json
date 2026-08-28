@@ -1,0 +1,16 @@
+{
+  // Type-checks the test suite. Kept separate from tsconfig.app.json so that
+  // Node type definitions are available to tests (which read the source tree
+  // from disk) without ever being visible to application code.
+  //
+  // Not a project reference: it deliberately overlaps tsconfig.app.json, which
+  // composite projects forbid. Run it via `npm run typecheck`.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"],
+    "noUnusedLocals": false,
+    "noUncheckedIndexedAccess": false
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"]
+}

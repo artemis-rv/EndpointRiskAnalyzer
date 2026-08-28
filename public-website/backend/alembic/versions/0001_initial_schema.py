@@ -1,4 +1,18 @@
-"""Initial schema — mirrors Prisma schema.prisma
+"""
+SCHEMA AUTHORITY
+────────────────
+Prisma owns this database schema. Both Prisma migrations are applied and
+`alembic_version` does not exist, so this Alembic revision has never run against
+the live database.
+
+It is kept as a faithful mirror of the Prisma schema for environments that
+provision with Alembic instead. The enum type names below therefore match the
+ones Prisma creates exactly — PascalCase, quoted. Two migration tools naming the
+same logical type differently is what produced the "type releasestatus does not
+exist" failure this revision was corrected for.
+
+If you change the schema, change `prisma/schema.prisma` first.
+Initial schema — mirrors Prisma schema.prisma
 
 Revision ID: 0001
 Revises: 
@@ -37,36 +51,36 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     # ── Enums ─────────────────────────────────────────────────────────────────
     userrole = postgresql.ENUM(
-        "USER", "ADMIN", "SUPER_ADMIN", name="userrole", create_type=True
+        "USER", "ADMIN", "SUPER_ADMIN", name="UserRole", create_type=True
     )
     userrole.create(op.get_bind(), checkfirst=True)
 
     releasestatus = postgresql.ENUM(
-        "DRAFT", "PUBLISHED", "ARCHIVED", name="releasestatus", create_type=True
+        "DRAFT", "PUBLISHED", "ARCHIVED", name="ReleaseStatus", create_type=True
     )
     releasestatus.create(op.get_bind(), checkfirst=True)
 
     feedbacktype = postgresql.ENUM(
         "RATING", "BUG", "FEATURE_REQUEST", "TESTIMONIAL", "GENERAL",
-        name="feedbacktype", create_type=True,
+        name="FeedbackType", create_type=True,
     )
     feedbacktype.create(op.get_bind(), checkfirst=True)
 
     feedbackstatus = postgresql.ENUM(
         "NEW", "UNDER_REVIEW", "ACCEPTED", "REJECTED", "RESOLVED",
-        name="feedbackstatus", create_type=True,
+        name="FeedbackStatus", create_type=True,
     )
     feedbackstatus.create(op.get_bind(), checkfirst=True)
 
     contactcategory = postgresql.ENUM(
         "SALES", "SUPPORT", "BUG", "FEATURE_REQUEST", "PARTNERSHIP", "GENERAL",
-        name="contactcategory", create_type=True,
+        name="ContactCategory", create_type=True,
     )
     contactcategory.create(op.get_bind(), checkfirst=True)
 
     contactstatus = postgresql.ENUM(
         "NEW", "IN_PROGRESS", "RESPONDED", "CLOSED",
-        name="contactstatus", create_type=True,
+        name="ContactStatus", create_type=True,
     )
     contactstatus.create(op.get_bind(), checkfirst=True)
 
@@ -83,7 +97,7 @@ def upgrade() -> None:
         sa.Column(
             "role",
             postgresql.ENUM(
-                "USER", "ADMIN", "SUPER_ADMIN", name="userrole", create_type=False
+                "USER", "ADMIN", "SUPER_ADMIN", name="UserRole", create_type=False
             ),
             nullable=False,
             server_default="USER",
@@ -147,7 +161,7 @@ def upgrade() -> None:
             "release_status",
             postgresql.ENUM(
                 "DRAFT", "PUBLISHED", "ARCHIVED",
-                name="releasestatus", create_type=False,
+                name="ReleaseStatus", create_type=False,
             ),
             nullable=False,
             server_default="DRAFT",
@@ -199,7 +213,7 @@ def upgrade() -> None:
             "type",
             postgresql.ENUM(
                 "RATING", "BUG", "FEATURE_REQUEST", "TESTIMONIAL", "GENERAL",
-                name="feedbacktype", create_type=False,
+                name="FeedbackType", create_type=False,
             ),
             nullable=False,
         ),
@@ -210,7 +224,7 @@ def upgrade() -> None:
             "status",
             postgresql.ENUM(
                 "NEW", "UNDER_REVIEW", "ACCEPTED", "REJECTED", "RESOLVED",
-                name="feedbackstatus", create_type=False,
+                name="FeedbackStatus", create_type=False,
             ),
             nullable=False,
             server_default="NEW",
@@ -253,7 +267,7 @@ def upgrade() -> None:
             "category",
             postgresql.ENUM(
                 "SALES", "SUPPORT", "BUG", "FEATURE_REQUEST", "PARTNERSHIP", "GENERAL",
-                name="contactcategory", create_type=False,
+                name="ContactCategory", create_type=False,
             ),
             nullable=False,
         ),
@@ -261,7 +275,7 @@ def upgrade() -> None:
             "status",
             postgresql.ENUM(
                 "NEW", "IN_PROGRESS", "RESPONDED", "CLOSED",
-                name="contactstatus", create_type=False,
+                name="ContactStatus", create_type=False,
             ),
             nullable=False,
             server_default="NEW",
@@ -310,7 +324,7 @@ def downgrade() -> None:
 
     # Drop enums
     for enum_name in [
-        "contactstatus", "contactcategory", "feedbackstatus",
-        "feedbacktype", "releasestatus", "userrole",
+        "ContactStatus", "ContactCategory", "FeedbackStatus",
+        "FeedbackType", "ReleaseStatus", "UserRole",
     ]:
-        op.execute(f"DROP TYPE IF EXISTS {enum_name}")
+        op.execute(f'DROP TYPE IF EXISTS "{enum_name}"')

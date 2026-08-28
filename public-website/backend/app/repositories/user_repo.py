@@ -8,9 +8,9 @@ All database queries are encapsulated here — no SQL in service/route layers.
 from __future__ import annotations
 
 import uuid
-from typing import Optional
+from typing import List, Optional, Tuple
 
-from sqlalchemy import select, update
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User, UserRole
@@ -95,3 +95,50 @@ class UserRepository:
         self, user_id: uuid.UUID, password_hash: str
     ) -> None:
         await self.update_fields(user_id, password_hash=password_hash)
+
+    async def list_all(
+        self,
+        *,
+        offset: int = 0,
+        limit: int = 20,
+        role: Optional[UserRole] = None,
+        search: Optional[str] = None,
+    ) -> Tuple[List[User], int]:
+        """
+        Registered accounts, newest first, for the admin view.
+
+        The search term is bound as a parameter, never interpolated into SQL.
+        It is also escaped for LIKE so that a user typing % or _ searches for
+        those characters rather than turning the query into a wildcard scan.
+        """
+        conditions = []
+        if role is not None:
+            conditions.append(User.role == role)
+
+        if search:
+            # Escape the LIKE metacharacters. The backslash must be doubled
+            # first, otherwise the escapes added afterwards get escaped in turn.
+            escaped = (
+                search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            )
+            pattern = f"%{escaped}%"
+            conditions.append(
+                or_(
+                    User.first_name.ilike(pattern, escape="\\"),
+                    User.last_name.ilike(pattern, escape="\\"),
+                    User.email.ilike(pattern, escape="\\"),
+                    User.company_name.ilike(pattern, escape="\\"),
+                )
+            )
+
+        count_stmt = select(func.count(User.user_id))
+        list_stmt = select(User)
+        for condition in conditions:
+            count_stmt = count_stmt.where(condition)
+            list_stmt = list_stmt.where(condition)
+
+        total = (await self._session.execute(count_stmt)).scalar_one()
+        result = await self._session.execute(
+            list_stmt.order_by(User.created_at.desc()).offset(offset).limit(limit)
+        )
+        return result.scalars().all(), total

@@ -23,8 +23,10 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from app.core.config import get_settings
+from app.core.logging import get_logger
 
 settings = get_settings()
+_logger = get_logger(__name__)
 
 # Build a set of trusted proxy networks from config once at import time
 _TRUSTED_NETWORKS: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
@@ -81,11 +83,56 @@ def _get_client_ip(request: Request) -> str:
     return peer_ip or "unknown"
 
 
+def _resolve_storage_uri() -> str:
+    """
+    Choose the limiter backend, preferring Redis but never depending on it.
+
+    The previous arrangement passed REDIS_URL straight through on the assumption
+    that an unreachable Redis would fall back on its own. It does not: `limits`
+    raises ConnectionError on the first counter operation, and because that
+    happens inside the limiter decorator it surfaced as a 500 on every
+    rate-limited endpoint — registration, login, password reset. A dependency
+    whose job is to protect the service was able to take the service down.
+
+    So reachability is probed once, here, and the decision is explicit.
+
+    Falling back to `memory://` degrades rather than disables: limits are still
+    enforced, just per process instead of shared across workers. That is a
+    weaker guarantee, not an absent one, which matters because these limits are
+    what slow down credential brute-forcing. It is logged loudly so a
+    misconfigured Redis in production is visible rather than silent.
+    """
+    redis_url = settings.REDIS_URL
+    if not redis_url or redis_url.startswith("memory://"):
+        return "memory://"
+
+    try:
+        import redis  # provided transitively by limits[redis]
+
+        client = redis.from_url(
+            redis_url,
+            socket_connect_timeout=1,
+            socket_timeout=1,
+        )
+        client.ping()
+        client.close()
+        return redis_url
+    except Exception as exc:  # noqa: BLE001 — any failure means "not usable"
+        _logger.warning(
+            "rate_limit_storage_fallback",
+            reason=type(exc).__name__,
+            detail="Redis unreachable; rate limits will be enforced per process.",
+        )
+        return "memory://"
+
+
 limiter = Limiter(
     key_func=_get_client_ip,
     default_limits=[settings.RATE_LIMIT_DEFAULT],
-    # Falls back to in-memory if REDIS_URL is not reachable
-    storage_uri=settings.REDIS_URL,
+    storage_uri=_resolve_storage_uri(),
+    # A limiter fault must never become a request fault. If the backend fails
+    # mid-flight the request proceeds rather than returning 500.
+    swallow_errors=True,
 )
 
 

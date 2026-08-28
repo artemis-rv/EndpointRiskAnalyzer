@@ -19,6 +19,7 @@ from app.schemas.feedback import (
     AdminUpdateFeedbackRequest,
     CreateFeedbackRequest,
     FeedbackResponse,
+    PublicTestimonialResponse,
 )
 from app.utils.audit import log_admin_action
 from app.utils.pagination import build_paginated_response
@@ -130,3 +131,10 @@ class FeedbackService:
         )
 
         return FeedbackResponse.model_validate(updated)
+
+    async def list_public_testimonials(
+        self, *, limit: int = 12
+    ) -> list[PublicTestimonialResponse]:
+        """Approved, featured testimonials for the public homepage."""
+        rows = await self._feedback_repo.list_public_testimonials(limit=limit)
+        return [PublicTestimonialResponse.model_validate(row) for row in rows]

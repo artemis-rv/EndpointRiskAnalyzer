@@ -95,6 +95,11 @@ class ResetPasswordRequest(BaseModel):
         return v
 
 
+class ResendVerificationRequest(BaseModel):
+    """Schema for POST /api/v1/auth/resend-verification"""
+    email: EmailStr
+
+
 class MessageResponse(BaseModel):
     """Generic message-only response."""
     message: str

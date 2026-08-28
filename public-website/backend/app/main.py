@@ -76,18 +76,44 @@ def create_application() -> FastAPI:
     # ── Rate limiter state ────────────────────────────────────────────────────
     app.state.limiter = limiter
 
-    # ── Middleware (order matters — outermost applied first) ──────────────────
+    # ── Middleware ────────────────────────────────────────────────────────────
+    #
+    # ORDERING, PRECISELY
+    # `add_middleware` PREPENDS, so the LAST call below is the OUTERMOST layer.
+    # The resulting stack, outermost first, is:
+    #
+    #     ServerErrorMiddleware   (Starlette, always outermost)
+    #       _BodySizeLimitMiddleware
+    #         CORSMiddleware
+    #           SecurityHeadersMiddleware
+    #             RequestIDMiddleware
+    #               _CatchAllExceptionMiddleware   ← added first, so innermost
+    #                 ExceptionMiddleware (Starlette)
+    #                   routes
+    #
+    # Why the catch-all sits at the bottom: an unhandled exception that escapes
+    # to Starlette's ServerErrorMiddleware produces a response *outside* the CORS
+    # layer, so it carries no Access-Control-Allow-Origin header. The browser
+    # then reports a CORS failure instead of a 500, and the frontend cannot tell
+    # "the server broke" from "the server is unreachable".
+    #
+    # Catching below CORS turns the same failure into an ordinary JSON response
+    # that travels back out through CORS and picks up its headers.
 
-    # 1. Request ID / Correlation ID (must be first so IDs appear in all logs)
+    # 1. Catch-all — innermost, so its response passes back through CORS.
+    app.add_middleware(_CatchAllExceptionMiddleware)
+
+    # 2. Request ID / Correlation ID (runs before the catch-all on the way in,
+    #    so request.state.request_id is populated for the error response)
     app.add_middleware(RequestIDMiddleware)
 
-    # 2. Security headers
+    # 3. Security headers
     app.add_middleware(
         SecurityHeadersMiddleware,
         production=settings.is_production,
     )
 
-    # 3. CORS
+    # 4. CORS
     # FINDING-VA-006 (INFO): allow_credentials=True is ONLY safe when origins
     # are an explicit allowlist — never when "*" is present. If a wildcard were
     # ever added, the combination would allow any site to make credentialed
@@ -99,11 +125,20 @@ def create_application() -> FastAPI:
         allow_credentials=_allow_credentials,
         allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
-        expose_headers=["X-Request-ID", "X-Correlation-ID"],
+        # Only a handful of response headers are readable cross-origin by
+        # default, and Content-Disposition is not one of them. Without exposing
+        # it the download page cannot read the filename the server chose and
+        # falls back to a generic name — the file arrives correctly but saves
+        # under the wrong one.
+        expose_headers=[
+            "X-Request-ID",
+            "X-Correlation-ID",
+            "Content-Disposition",
+        ],
         max_age=600,
     )
 
-    # 4. Request body size limit
+    # 5. Request body size limit
     app.add_middleware(
         _BodySizeLimitMiddleware,
         max_bytes=settings.MAX_REQUEST_SIZE,
@@ -120,6 +155,46 @@ def create_application() -> FastAPI:
     app.include_router(health_api_router)
 
     return app
+
+
+# ── Catch-all exception middleware ────────────────────────────────────────────
+class _CatchAllExceptionMiddleware(BaseHTTPMiddleware):
+    """
+    Converts any unhandled exception into the standard error envelope.
+
+    This exists so that a 500 is produced *inside* the CORS layer. Starlette's
+    own ServerErrorMiddleware sits outside every user middleware, so a response
+    it generates never passes through CORSMiddleware and therefore carries no
+    Access-Control-Allow-Origin header. A browser sees that as a CORS failure
+    rather than a server error, which hides real faults from the client.
+
+    The response body is deliberately generic: no exception type, no message, no
+    traceback, no SQL. Everything useful for diagnosis goes to the server log,
+    correlated by request_id, which is also the only detail returned so a person
+    reporting a problem can quote it.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception as exc:  # noqa: BLE001 — deliberately broad
+            request_id = getattr(request.state, "request_id", None)
+            logger.error(
+                "unhandled_exception",
+                exc_type=type(exc).__name__,
+                request_id=request_id,
+                path=request.url.path,
+                method=request.method,
+                exc_info=exc,
+            )
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={
+                    "success": False,
+                    "error": "An internal server error occurred.",
+                    "request_id": request_id,
+                },
+            )
 
 
 # ── Body size limit middleware ────────────────────────────────────────────────

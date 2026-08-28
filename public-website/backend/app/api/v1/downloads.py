@@ -6,9 +6,11 @@ Download tracking API routes.
 
 from __future__ import annotations
 
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import require_verified
@@ -66,4 +68,62 @@ async def list_my_downloads(
     service = DownloadService(db)
     return await service.list_my_downloads(
         current_user.user_id, page=page, page_size=page_size
+    )
+
+
+@router.get(
+    "/{release_id}/file",
+    status_code=status.HTTP_200_OK,
+    response_class=FileResponse,
+    summary="Download the release artefact",
+    description=(
+        "Authenticates and authorises the caller, confirms the release is "
+        "published and the artefact is present, records the download, then "
+        "streams the file. Requires a verified email address."
+    ),
+    responses={
+        200: {"content": {"application/octet-stream": {}}},
+        403: {"description": "Email not verified, or account inactive"},
+        404: {"description": "Release not published, or artefact unavailable"},
+        429: {"description": "Hourly download limit reached for this release"},
+    },
+)
+async def download_release_file(
+    request: Request,
+    release_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_verified),
+) -> FileResponse:
+    """
+    Deliver a release artefact.
+
+    The client never learns where the file lives. `release_id` is the only thing
+    it names, the storage layer maps that to a path inside a single trusted
+    root, and the response carries a filename derived from the release version
+    rather than from anything stored in the database.
+    """
+    service = DownloadService(db)
+    resolved, filename, media_type = await service.prepare_delivery(
+        release_id,
+        user_id=current_user.user_id,
+        ip_address=_get_ip(request),
+        user_agent=request.headers.get("User-Agent", "")[:512],
+        request_id=getattr(request.state, "request_id", None),
+    )
+
+    return FileResponse(
+        path=resolved,
+        media_type=media_type,
+        filename=filename,
+        headers={
+            # `filename=` above sets Content-Disposition; this makes the intent
+            # explicit and stops any proxy sniffing the body into something
+            # renderable.
+            #
+            # Cache-Control is deliberately NOT set here: SecurityHeadersMiddleware
+            # already applies "no-store, no-cache, must-revalidate" to every
+            # response, which is stricter than anything worth adding. Setting it
+            # again here would look authoritative while being silently overridden.
+            "X-Content-Type-Options": "nosniff",
+        },
     )

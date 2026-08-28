@@ -59,7 +59,7 @@ class User(Base):
     company_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="userrole", create_type=True),
+        Enum(UserRole, name="UserRole", create_type=False),
         nullable=False,
         default=UserRole.USER,
         server_default="USER",
@@ -80,7 +80,15 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
+        # Prisma owns this schema, and Prisma implements `@updatedAt` in its
+        # client rather than as a database default — so the column is NOT NULL
+        # with nothing to fall back on. A `server_default` here described a
+        # default the database does not have, and every INSERT that omitted the
+        # value failed with a not-null violation.
+        #
+        # `default=` is client-side: SQLAlchemy emits now() as part of the
+        # INSERT, which is the same contract Prisma's client provides.
+        default=func.now(),
         onupdate=func.now(),
     )
 

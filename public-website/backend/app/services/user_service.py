@@ -11,7 +11,10 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.user import UserRole
 from app.repositories.user_repo import UserRepository
+from app.schemas.common import PaginatedResponse
+from app.utils.pagination import build_paginated_response
 from app.schemas.user import UpdateMeRequest, UserPublicResponse
 
 
@@ -53,3 +56,29 @@ class UserService:
         await self._session.commit()
 
         return UserPublicResponse.model_validate(updated_user)
+
+    async def list_all_admin(
+        self,
+        *,
+        page: int,
+        page_size: int,
+        role: Optional[UserRole] = None,
+        search: Optional[str] = None,
+    ) -> PaginatedResponse[UserPublicResponse]:
+        """
+        Registered accounts for the admin view.
+
+        Mapped through `UserPublicResponse`, which is the same shape the account
+        endpoint returns. Nothing sensitive is added for admins: the password
+        hash is not in that schema, and no code path here reads it.
+        """
+        users, total = await self._user_repo.list_all(
+            offset=(page - 1) * page_size,
+            limit=page_size,
+            role=role,
+            search=search,
+        )
+        items = [UserPublicResponse.model_validate(user) for user in users]
+        return build_paginated_response(
+            items=items, total=total, page=page, page_size=page_size
+        )

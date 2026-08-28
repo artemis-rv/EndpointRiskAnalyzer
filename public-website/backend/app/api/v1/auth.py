@@ -25,6 +25,7 @@ from app.schemas.auth import (
     MessageResponse,
     RefreshRequest,
     RegisterRequest,
+    ResendVerificationRequest,
     RequestPasswordResetRequest,
     ResetPasswordRequest,
     TokenResponse,
@@ -166,3 +167,29 @@ async def reset_password(
     service = AuthService(db)
     await service.reset_password(body)
     return MessageResponse(message="Password reset successfully. Please log in.")
+
+
+@router.post(
+    "/resend-verification",
+    response_model=MessageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Request a fresh email verification link",
+    description=(
+        "Always returns 200 regardless of whether the address exists or is "
+        "already verified (prevents enumeration)."
+    ),
+)
+@limiter.limit("3/minute")
+async def resend_verification(
+    request: Request,
+    body: ResendVerificationRequest,
+    db: AsyncSession = Depends(get_db),
+) -> MessageResponse:
+    service = AuthService(db)
+    await service.resend_verification(body.email, ip_address=_get_client_ip(request))
+    return MessageResponse(
+        message=(
+            "If that address belongs to an unverified account, "
+            "a new verification link has been sent."
+        )
+    )

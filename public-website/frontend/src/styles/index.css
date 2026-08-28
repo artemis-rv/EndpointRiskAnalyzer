@@ -1,0 +1,325 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design system foundation.
+ * ─────────────────────────
+ * Component classes live here so buttons, inputs, cards, tables, badges and
+ * alerts look the same everywhere without each component inventing its own
+ * spacing and colour. Components compose these classes; they do not restate
+ * the values inside them.
+ */
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  /* Respect a stated preference for less motion. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-white font-sans text-ink-800 antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* A single, always-visible focus treatment. Focus is never removed. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold tracking-tight text-ink-950;
+    text-wrap: balance;
+  }
+
+  /* Long unbroken strings (checksums, ids) must never blow out a layout. */
+  code,
+  pre {
+    @apply font-mono;
+  }
+}
+
+@layer components {
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-narrow {
+    @apply mx-auto w-full max-w-3xl px-4 sm:px-6;
+  }
+
+  .section {
+    @apply py-14 sm:py-20;
+  }
+
+  /* Lets keyboard users jump the navigation. Visible only when focused. */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50
+           focus:rounded-md focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-sm
+           focus:font-semibold focus:text-white;
+  }
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-brand-600;
+  }
+
+  .heading-1 {
+    @apply text-3xl leading-tight sm:text-4xl lg:text-5xl;
+  }
+
+  .heading-2 {
+    @apply text-2xl leading-tight sm:text-3xl;
+  }
+
+  .heading-3 {
+    @apply text-lg sm:text-xl;
+  }
+
+  .lede {
+    @apply text-base leading-relaxed text-ink-600 sm:text-lg;
+  }
+
+  .prose-body {
+    @apply max-w-prose text-[0.9375rem] leading-relaxed text-ink-600;
+  }
+
+  /* ── Buttons ────────────────────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-lg border
+           border-transparent px-4 py-2.5 text-sm font-semibold leading-none
+           transition-colors duration-150
+           disabled:cursor-not-allowed disabled:opacity-55;
+    /* 44px min target on touch devices without bloating desktop density. */
+    min-height: 2.75rem;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800;
+  }
+
+  .btn-secondary {
+    @apply btn border-ink-200 bg-white text-ink-800 hover:bg-ink-50 active:bg-ink-100;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-700 hover:bg-ink-100 active:bg-ink-200;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger-600 text-white hover:bg-danger-700 active:bg-danger-700;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+    min-height: 2.25rem;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+    min-height: 3rem;
+  }
+
+  /* Admin buttons take the admin hue so the two areas never look alike. */
+  .btn-admin {
+    @apply btn bg-admin-600 text-white hover:bg-admin-700 active:bg-admin-800;
+  }
+
+  /* ── Forms ──────────────────────────────────────────────────────────── */
+  .field {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .label {
+    @apply text-sm font-medium text-ink-800;
+  }
+
+  .hint {
+    @apply text-xs leading-relaxed text-ink-500;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900
+           placeholder:text-ink-400
+           focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25
+           disabled:cursor-not-allowed disabled:bg-ink-50 disabled:text-ink-500;
+    min-height: 2.75rem;
+  }
+
+  .input-invalid {
+    @apply border-danger-500 focus:border-danger-500 focus:ring-danger-500/25;
+  }
+
+  .textarea {
+    @apply input resize-y;
+    min-height: 8rem;
+  }
+
+  .select {
+    @apply input pr-9 appearance-none bg-no-repeat;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2363728e'%3E%3Cpath fill-rule='evenodd' d='M5.2 7.7a1 1 0 011.4 0L10 11l3.4-3.3a1 1 0 111.4 1.4l-4.1 4a1 1 0 01-1.4 0l-4.1-4a1 1 0 010-1.4z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    background-position: right 0.65rem center;
+    background-size: 1.15rem;
+  }
+
+  .error-text {
+    @apply flex items-start gap-1.5 text-xs font-medium text-danger-700;
+  }
+
+  /* ── Surfaces ───────────────────────────────────────────────────────── */
+  .card {
+    @apply rounded-card border border-ink-200 bg-white shadow-card;
+  }
+
+  .card-body {
+    @apply p-5 sm:p-6;
+  }
+
+  .card-hover {
+    @apply transition-shadow duration-200 hover:shadow-card-lg;
+  }
+
+  .panel {
+    @apply rounded-card border border-ink-200 bg-ink-50/60 p-5;
+  }
+
+  /* ── Badges ─────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1
+           text-xs font-semibold;
+  }
+
+  .badge-neutral {
+    @apply badge bg-ink-100 text-ink-700;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-50 text-brand-700;
+  }
+
+  .badge-success {
+    @apply badge bg-success-50 text-success-700;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-50 text-warning-700;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger-50 text-danger-700;
+  }
+
+  /* ── Tables ─────────────────────────────────────────────────────────── */
+  /* The wrapper scrolls, not the page, so admin tables stay usable on a phone. */
+  .table-wrap {
+    @apply w-full overflow-x-auto rounded-card border border-ink-200 bg-white;
+  }
+
+  .table {
+    @apply w-full min-w-[44rem] border-collapse text-left text-sm;
+  }
+
+  .table thead th {
+    @apply whitespace-nowrap border-b border-ink-200 bg-ink-50 px-4 py-3 text-xs
+           font-semibold uppercase tracking-wide text-ink-600;
+  }
+
+  .table tbody td {
+    @apply border-b border-ink-100 px-4 py-3 align-top text-ink-700;
+  }
+
+  .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table tbody tr:hover {
+    @apply bg-ink-50/70;
+  }
+
+  /* ── Alerts ─────────────────────────────────────────────────────────── */
+  .alert {
+    @apply flex items-start gap-3 rounded-lg border p-4 text-sm;
+  }
+
+  .alert-info {
+    @apply alert border-brand-200 bg-brand-50 text-brand-900;
+  }
+
+  .alert-success {
+    @apply alert border-success-200 bg-success-50 text-success-700;
+  }
+
+  .alert-warning {
+    @apply alert border-warning-200 bg-warning-50 text-warning-700;
+  }
+
+  .alert-danger {
+    @apply alert border-danger-200 bg-danger-50 text-danger-700;
+  }
+
+  /* ── Loading ────────────────────────────────────────────────────────── */
+  .skeleton {
+    @apply relative overflow-hidden rounded bg-ink-100;
+  }
+
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+
+  /* ── Links ──────────────────────────────────────────────────────────── */
+  .link {
+    @apply rounded font-medium text-brand-700 underline decoration-brand-300
+           underline-offset-2 hover:decoration-brand-600;
+  }
+
+  /* ── Admin chrome ───────────────────────────────────────────────────── */
+  .admin-shell {
+    @apply min-h-screen bg-admin-950;
+  }
+
+  .admin-nav-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
+           text-admin-100/80 transition-colors hover:bg-white/10 hover:text-white;
+  }
+
+  .admin-nav-link-active {
+    @apply bg-white/15 text-white;
+  }
+}
+
+@layer utilities {
+  /* Checksums and ids: wrap anywhere rather than overflow. */
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}

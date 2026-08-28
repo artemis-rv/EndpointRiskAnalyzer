@@ -28,7 +28,7 @@ class TestGetMe:
 
     async def test_get_me_unauthenticated(self, client: AsyncClient):
         response = await client.get("/api/v1/users/me")
-        assert response.status_code == 403  # No bearer token
+        assert response.status_code == 401  # no credential supplied -> 401 (RFC 7235)
 
     async def test_get_me_invalid_token(self, client: AsyncClient):
         response = await client.get(
@@ -73,4 +73,4 @@ class TestUpdateMe:
 
     async def test_update_unauthenticated(self, client: AsyncClient):
         response = await client.patch("/api/v1/users/me", json={"first_name": "X"})
-        assert response.status_code == 403
+        assert response.status_code == 401  # no credential supplied -> 401 (RFC 7235)

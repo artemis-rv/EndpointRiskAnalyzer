@@ -104,3 +104,29 @@ class FeedbackRepository:
             .values(**fields)
         )
         return await self.get_by_id(feedback_id)
+
+    async def list_public_testimonials(self, *, limit: int = 12) -> List[Feedback]:
+        """
+        Feedback cleared for public display.
+
+        The filter lives here, in SQL, and nowhere else. Fetching all feedback
+        and filtering client-side would put every unreviewed bug report and
+        complaint on the wire to an anonymous visitor; whatever the UI then did
+        with it, the disclosure would already have happened.
+
+        Three conditions must all hold:
+          featured  — an admin explicitly approved it for display
+          ACCEPTED  — it completed review rather than merely being submitted
+          type      — TESTIMONIAL or RATING, the two kinds meant to be shown
+        """
+        result = await self._session.execute(
+            select(Feedback)
+            .where(
+                Feedback.featured.is_(True),
+                Feedback.status == FeedbackStatus.ACCEPTED,
+                Feedback.type.in_([FeedbackType.TESTIMONIAL, FeedbackType.RATING]),
+            )
+            .order_by(Feedback.created_at.desc())
+            .limit(limit)
+        )
+        return result.scalars().all()

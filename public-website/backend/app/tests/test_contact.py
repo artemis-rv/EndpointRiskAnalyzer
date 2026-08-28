@@ -55,7 +55,7 @@ class TestContact:
                 "category": "GENERAL",
             },
         )
-        assert response.status_code == 403
+        assert response.status_code == 401  # no credential supplied -> 401 (RFC 7235)
 
     async def test_list_my_contacts(self, client: AsyncClient, regular_user):
         response = await client.get(

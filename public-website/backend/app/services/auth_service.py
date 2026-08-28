@@ -245,9 +245,14 @@ class AuthService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found.")
 
-        if user.email_verified:
-            return  # Idempotent
-
+        # The token is checked BEFORE the idempotency shortcut, deliberately.
+        #
+        # Returning success for an already-verified account without looking at
+        # the token turns this endpoint into an oracle: anyone holding a user id
+        # learns whether that account is verified by whether they get 200 or
+        # 400, without presenting any credential at all. It also means the API
+        # reports "verified successfully" in response to a token it never
+        # validated, which is not a claim it is entitled to make.
         if not verify_signed_token(token, user_id, purpose="email_verification"):
             log_auth_event(
                 event="verify_email",
@@ -258,6 +263,11 @@ class AuthService:
             raise HTTPException(
                 status_code=400, detail="Invalid or expired verification token."
             )
+
+        # Valid token, already verified: succeed quietly so that following the
+        # same link twice is not an error.
+        if user.email_verified:
+            return
 
         await self._user_repo.mark_email_verified(user.user_id)
         await self._session.commit()
@@ -326,4 +336,45 @@ class AuthService:
 
         log_auth_event(
             event="reset_password", actor_id=request.user_id, outcome="success"
+        )
+
+    async def resend_verification(
+        self, email: str, *, ip_address: Optional[str] = None
+    ) -> None:
+        """
+        Re-issue an email verification link.
+
+        Deliberately silent about the outcome. The caller gets the same answer
+        whether the address is unknown, already verified, or has just been sent
+        a fresh link, because a form that behaves differently for a registered
+        address is an account enumeration oracle — the same reason
+        `request_password_reset` is written this way.
+
+        No token is stored. Verification tokens in this system are HMAC-signed
+        and self-describing: they carry their own expiry and are validated by
+        recomputing the signature, so there is no server-side record to create,
+        expire or leak. Issuing a new one simply supersedes the old one for
+        practical purposes; both remain valid until they expire, which is why
+        the copy in the UI tells people to use the most recent email.
+        """
+        user = await self._user_repo.get_by_email(email)
+
+        if user is not None and user.is_active and not user.email_verified:
+            token = generate_signed_token(
+                str(user.user_id),
+                purpose="email_verification",
+                expires_in_seconds=settings.EMAIL_VERIFICATION_EXPIRE_HOURS * 3600,
+            )
+            await send_verification_email(
+                to_address=user.email,
+                user_id=str(user.user_id),
+                token=token,
+            )
+
+        log_auth_event(
+            event="resend_verification",
+            actor_id=str(user.user_id) if user else None,
+            outcome="success",
+            email=email,
+            ip_address=ip_address,
         )

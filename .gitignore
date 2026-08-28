@@ -83,8 +83,14 @@ yarn-error.log*
 # -----------------------------------------------------------------------------
 scans/
 *.json
-!**/package.json          # never ignore package.json
-!**/package-lock.json     # never ignore package-lock.json
+# Never ignore package manifests and TypeScript configuration files
+!package.json
+!package-lock.json
+!tsconfig*.json
+!**/package.json
+!**/package-lock.json
+!**/tsconfig*.json
+!**/tsconfig.json
 
 # PyInstaller compiled agent binaries
 agent/build/
@@ -142,3 +148,6 @@ test_cis_integration.py
 *.tmp
 *.bak
 *.swp
+
+# Release artefacts — binaries are distributed, never committed
+public-website/backend/storage/

@@ -93,7 +93,7 @@ class TestFeedback:
                 "description": "Test",
             },
         )
-        assert response.status_code == 403
+        assert response.status_code == 401  # no credential supplied -> 401 (RFC 7235)
 
 
 class TestAdminFeedback:
